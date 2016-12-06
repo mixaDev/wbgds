@@ -269,9 +269,9 @@
         //vis.stopShow();
     }
 
-    d3.select("#chHisto").on("change", function(d) {
-        setting.showHistogram = this.checked;
-    });
+    // d3.select("#chHisto").on("change", function(d) {
+    //     setting.showHistogram = this.checked;
+    // });
 
     d3.select("#chLeg").on("change", function(d) {
         setting.showCountExt = this.checked;
@@ -380,8 +380,7 @@
     d3.select("#fiscalYear")
         .on("change", function(d) {
             fy = +this.value;
-            if (document.location.href.indexOf('visualizing.org') > -1)
-                document.location = "https://dl-web.dropbox.com/spa/6x4vg7uwuzglgh3/wbgds/public/index.html#year=" + fy;
+
             btnReload.show();
         })
         .selectAll('option')

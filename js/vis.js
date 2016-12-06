@@ -3,11 +3,11 @@
 (function(window) {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame =
-            window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
+    // for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    //     window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    //     window.cancelAnimationFrame =
+    //         window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    // }
 
     if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
@@ -109,7 +109,9 @@ var ONE_SECOND = 1000,
         links,
         regionLinks,
 
-        lCom, lLeg, lHis,
+        lCom,
+        lLeg, 
+        // lHis,
 
         canvas, ctx,
         bufCanvas, bufCtx,
@@ -271,7 +273,7 @@ var ONE_SECOND = 1000,
     }
 
     function loop() {
-        // console.log('loop');
+        console.log('loop');
         if (stop) {
             clearTimeout(_worker);
             return;
@@ -300,7 +302,7 @@ var ONE_SECOND = 1000,
         vis.pb.step(stepDate).label(shortTimeFormat(dr));
 
         if (dl >= dateRange[1]) {
-            updateExtHistogram();
+            // updateExtHistogram();
             if (typeof _worker !== "undefined") {
                 clearTimeout(_worker);
             }
@@ -310,12 +312,12 @@ var ONE_SECOND = 1000,
                 loop();
         }
 
-        updateExtHistogram();
+        // updateExtHistogram();
         _worker = setTimeout(loop, ONE_SECOND);
     }
 
     function run() {
-        // console.log('run');
+        console.log('run');
 
         if (typeof _worker !== "undefined")
             clearTimeout(_worker);
@@ -925,10 +927,10 @@ var ONE_SECOND = 1000,
     }
 
     function render() {
-        // console.log('render')
+        console.log('render');
         requestAnimationFrame(render);
 
-        lHis && lHis.style("display", setting.showHistogram ? null : "none");
+        // lHis && lHis.style("display", setting.showHistogram ? null : "none");
         lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
 
         if (valid)
@@ -1070,10 +1072,10 @@ var ONE_SECOND = 1000,
             .range([0, h2])
             .domain([0, extMax]);
 
-        lHis = (lHis || layer.insert("g", ":first-child"))
-            .attr("width", w3)
-            .attr("height", h2)
-            .attr("transform", "translate(" + [ ml , _h - h2 - mb ] + ")");
+        // lHis = (lHis || layer.insert("g", ":first-child"))
+        //     .attr("width", w3)
+        //     .attr("height", h2)
+        //     .attr("transform", "translate(" + [ ml , _h - h2 - mb ] + ")");
 
         if (!key)
             return;
@@ -1089,44 +1091,44 @@ var ONE_SECOND = 1000,
             data.push(obj);
         });
 
-        updateExtHistogram();
+        // updateExtHistogram();
 
-        var g = lHis.append("g")
-            .attr("class", "colStack")
-            .datum({ x : 0, max : w3, w : bw })
-            .style("opacity", 0);
-
-        g.selectAll("rect")
-            .data(data)
-            .enter()
-            .append("rect")
-            .attr("x", 0)
-            .attr("y", function(d) {  return d.y;  })
-            .attr("width", bw)
-            .attr("height", function(d) { return d.h; })
-            .attr("fill", function(d) { return d.color; })
-        ;
-
-        g.style("opacity", 1)
-            .attr("transform", function(d) {
-                return "translate(" + [ d.x, 0] + ")";
-            });
+        // var g = lHis.append("g")
+        //     .attr("class", "colStack")
+        //     .datum({ x : 0, max : w3, w : bw })
+        //     .style("opacity", 0);
+        //
+        // g.selectAll("rect")
+        //     .data(data)
+        //     .enter()
+        //     .append("rect")
+        //     .attr("x", 0)
+        //     .attr("y", function(d) {  return d.y;  })
+        //     .attr("width", bw)
+        //     .attr("height", function(d) { return d.h; })
+        //     .attr("fill", function(d) { return d.color; })
+        // ;
+        //
+        // g.style("opacity", 1)
+        //     .attr("transform", function(d) {
+        //         return "translate(" + [ d.x, 0] + ")";
+        //     });
     }
 
-    function updateExtHistogram() {
-        if (!lHis || lHis.selectAll(".colStack").empty())
-            return;
-
-        lHis.selectAll(".colStack")
-            .attr("transform", function(d) {
-                return "translate(" + [ d.x += d.w/2, 0] + ")";
-            })
-            .filter(function(d) {
-                return d.x > d.max;
-            })
-            .remove()
-        ;
-    }
+    // function updateExtHistogram() {
+    //     if (!lHis || lHis.selectAll(".colStack").empty())
+    //         return;
+    //
+    //     lHis.selectAll(".colStack")
+    //         .attr("transform", function(d) {
+    //             return "translate(" + [ d.x += d.w/2, 0] + ")";
+    //         })
+    //         .filter(function(d) {
+    //             return d.x > d.max;
+    //         })
+    //         .remove()
+    //     ;
+    // }
 
     function lme(d) {
         selectedExt = d.value;
@@ -1391,7 +1393,7 @@ var ONE_SECOND = 1000,
     }
 
     vis.runShow = function(data, dom, w, h, asetting) {
-        // console.log(data, dom, w, h, asetting);
+        console.log(data, dom, w, h, asetting);
 
         if (typeof _worker !== "undefined")
             clearTimeout(_worker);
@@ -1459,7 +1461,7 @@ var ONE_SECOND = 1000,
         bufCtx.textAlign = "center";
 
         d3.select(dom.node().parentNode).select("#s").remove();
-        lHis = null;
+        // lHis = null;
         lCom = null;
         lLeg = null;
 
@@ -1477,7 +1479,7 @@ var ONE_SECOND = 1000,
             .style("fill", "#ffffff")
             .style("fill-opacity", 0);
 
-        lHis && lHis.selectAll("*").remove();
+        // lHis && lHis.selectAll("*").remove();
 
         lCom = (
             lCom || layer.append("g")
