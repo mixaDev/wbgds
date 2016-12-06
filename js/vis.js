@@ -32,9 +32,9 @@ var vis = {},
 var setting = {
     childLife : 1 // number of steps of life a child
     , parentLife : 1 // number of steps of life a parent
-    , showCountExt : false // show table of child's extension
+    // , showCountExt : false // show table of child's extension
     // , onlyShownExt : true // show only extension which is shown
-    , showHistogram : false // displaying histogram of changed files
+    // , showHistogram : false // displaying histogram of changed files
     , showHalo : false // show a child's halo
     , padding : 0 // padding around a parent
     , rateOpacity : .5 // rate of decrease of opacity
@@ -110,7 +110,7 @@ var ONE_SECOND = 1000,
         regionLinks,
 
         lCom,
-        lLeg, 
+        // lLeg,
         // lHis,
 
         canvas, ctx,
@@ -255,7 +255,7 @@ var ONE_SECOND = 1000,
             }
         }
 
-        updateLegend(/*d.sha*/);
+        // updateLegend(/*d.sha*/);
 
         _force.nodes(nodes.filter(function(d) {
                 return d.type != typeNode.parent && (d.visible || d.opacity);
@@ -291,7 +291,7 @@ var ONE_SECOND = 1000,
         dr = dl + stepDate;
         dateRange[0] = dr;
 
-        appendExtLegend(shortTimeFormat(dr));
+        // appendExtLegend(shortTimeFormat(dr));
 
         var visTurn = _data.filter(function (d) {
             return d.date >= dl && d.date < dr;
@@ -931,7 +931,7 @@ var ONE_SECOND = 1000,
         requestAnimationFrame(render);
 
         // lHis && lHis.style("display", setting.showHistogram ? null : "none");
-        lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
+        // lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
 
         if (valid)
             return;
@@ -1055,65 +1055,65 @@ var ONE_SECOND = 1000,
         };
     }
 
-    function appendExtLegend(key){
-        if (!layer)
-            return;
-
-        var data = [],
-            w3 = _w / 3,
-            ml = 5,//_w * .01,
-            mb = 18,
-            h2 = (_h / 2) - mb,
-            bw = 2,
-            ny
-            ;
-
-        var y = d3.scale.linear()
-            .range([0, h2])
-            .domain([0, extMax]);
-
-        // lHis = (lHis || layer.insert("g", ":first-child"))
-        //     .attr("width", w3)
-        //     .attr("height", h2)
-        //     .attr("transform", "translate(" + [ ml , _h - h2 - mb ] + ")");
-
-        if (!key)
-            return;
-
-        ny = h2;
-        extHash.forEach(function(k, d) {
-            var obj = {
-                key : k,
-                h : y(d.currents[key] || 0),
-                color : d.color
-            };
-            obj.y = ny -= obj.h;
-            data.push(obj);
-        });
-
-        // updateExtHistogram();
-
-        // var g = lHis.append("g")
-        //     .attr("class", "colStack")
-        //     .datum({ x : 0, max : w3, w : bw })
-        //     .style("opacity", 0);
-        //
-        // g.selectAll("rect")
-        //     .data(data)
-        //     .enter()
-        //     .append("rect")
-        //     .attr("x", 0)
-        //     .attr("y", function(d) {  return d.y;  })
-        //     .attr("width", bw)
-        //     .attr("height", function(d) { return d.h; })
-        //     .attr("fill", function(d) { return d.color; })
-        // ;
-        //
-        // g.style("opacity", 1)
-        //     .attr("transform", function(d) {
-        //         return "translate(" + [ d.x, 0] + ")";
-        //     });
-    }
+    // function appendExtLegend(key){
+    //     if (!layer)
+    //         return;
+    //
+    //     var data = [],
+    //         w3 = _w / 3,
+    //         ml = 5,//_w * .01,
+    //         mb = 18,
+    //         h2 = (_h / 2) - mb,
+    //         bw = 2,
+    //         ny
+    //         ;
+    //
+    //     var y = d3.scale.linear()
+    //         .range([0, h2])
+    //         .domain([0, extMax]);
+    //
+    //     lHis = (lHis || layer.insert("g", ":first-child"))
+    //         .attr("width", w3)
+    //         .attr("height", h2)
+    //         .attr("transform", "translate(" + [ ml , _h - h2 - mb ] + ")");
+    //
+    //     if (!key)
+    //         return;
+    //
+    //     ny = h2;
+    //     extHash.forEach(function(k, d) {
+    //         var obj = {
+    //             key : k,
+    //             h : y(d.currents[key] || 0),
+    //             color : d.color
+    //         };
+    //         obj.y = ny -= obj.h;
+    //         data.push(obj);
+    //     });
+    //
+    //     updateExtHistogram();
+    //
+    //     var g = lHis.append("g")
+    //         .attr("class", "colStack")
+    //         .datum({ x : 0, max : w3, w : bw })
+    //         .style("opacity", 0);
+    //    
+    //     g.selectAll("rect")
+    //         .data(data)
+    //         .enter()
+    //         .append("rect")
+    //         .attr("x", 0)
+    //         .attr("y", function(d) {  return d.y;  })
+    //         .attr("width", bw)
+    //         .attr("height", function(d) { return d.h; })
+    //         .attr("fill", function(d) { return d.color; })
+    //     ;
+    //    
+    //     g.style("opacity", 1)
+    //         .attr("transform", function(d) {
+    //             return "translate(" + [ d.x, 0] + ")";
+    //         });
+    // }
 
     // function updateExtHistogram() {
     //     if (!lHis || lHis.selectAll(".colStack").empty())
@@ -1145,13 +1145,13 @@ var ONE_SECOND = 1000,
             "M.</b><br/>"
         ].join(''));
         tooltip.style("display", "block");
-        updateLegend();
+        // updateLegend();
     }
 
     function lml() {
         selectedExt = null;
         tooltip.style("display", null);
-        updateLegend();
+        // updateLegend();
     }
 
     function lmm(d) {
@@ -1172,55 +1172,55 @@ var ONE_SECOND = 1000,
             : d.value.color;
     }
 
-    function initLegend() {
-        if (!layer)
-            return;
-
-        var mt = 48,
-            ml = 5,//_w * .01,
-            h2 = _h / 2 - mt,
-            w3 = _w / 3
-            ;
-
-        lLeg = (lLeg || layer.append("g"))
-            .attr("width", w3)
-            .attr("height", h2)
-            .attr("transform", "translate(" + [ml, mt] + ")");
-
-        lLeg.selectAll("*").remove();
-
-        var g = lLeg.selectAll(".gLeg")
-            .data(extHash.entries(), function(d) { return d.key; });
-
-        g.exit().remove();
-
-        g.enter().append("g")
-            .on("mouseover", lme)
-            .on("mousemove", lmm)
-            .on("mouseout", lml)
-            .attr("class", "gLeg")
-            .attr("transform", function(d, i) {
-                return "translate(" + [0, i * 18] + ")";
-            })
-            .style("visibility", "hidden")
-        ;
-        g.append("rect")
-            .attr("height", 16)
-            .style("fill", legColor)
-        ;
-        g.append("text")
-            .attr("class", "gttLeg")
-            .style("font-size", "13px")
-            .text(function(d) { return d.key; })
-            .style("fill", function(d) { return d3.rgb(d.value.color).brighter().brighter(); })
-        ;
-
-        g.append("text")
-            .attr("class", "gtLeg")
-            .style("font-size", "11px")
-            .attr("transform", "translate(" + [2, 12] + ")")
-        ;
-    }
+    // function initLegend() {
+    //     if (!layer)
+    //         return;
+    //
+    //     var mt = 48,
+    //         ml = 5,//_w * .01,
+    //         h2 = _h / 2 - mt,
+    //         w3 = _w / 3
+    //         ;
+    //
+    //     lLeg = (lLeg || layer.append("g"))
+    //         .attr("width", w3)
+    //         .attr("height", h2)
+    //         .attr("transform", "translate(" + [ml, mt] + ")");
+    //
+    //     lLeg.selectAll("*").remove();
+    //
+    //     var g = lLeg.selectAll(".gLeg")
+    //         .data(extHash.entries(), function(d) { return d.key; });
+    //
+    //     g.exit().remove();
+    //
+    //     g.enter().append("g")
+    //         .on("mouseover", lme)
+    //         .on("mousemove", lmm)
+    //         .on("mouseout", lml)
+    //         .attr("class", "gLeg")
+    //         .attr("transform", function(d, i) {
+    //             return "translate(" + [0, i * 18] + ")";
+    //         })
+    //         .style("visibility", "hidden")
+    //     ;
+    //     g.append("rect")
+    //         .attr("height", 16)
+    //         .style("fill", legColor)
+    //     ;
+    //     g.append("text")
+    //         .attr("class", "gttLeg")
+    //         .style("font-size", "13px")
+    //         .text(function(d) { return d.key; })
+    //         .style("fill", function(d) { return d3.rgb(d.value.color).brighter().brighter(); })
+    //     ;
+    //
+    //     g.append("text")
+    //         .attr("class", "gtLeg")
+    //         .style("font-size", "11px")
+    //         .attr("transform", "translate(" + [2, 12] + ")")
+    //     ;
+    // }
 
     function sortLeg(b, a) {
         return d3.ascending(a.value.now.length, b.value.now.length);
@@ -1230,45 +1230,45 @@ var ONE_SECOND = 1000,
         return d3.ascending(a.key, b.key);
     }
 
-    function updateLegend() {
-        if (!lLeg || lLeg.empty())
-            return;
-
-        var g = lLeg.selectAll(".gLeg");
-
-        function wl(d) {
-            return d.value.now.length;
-        }
-
-        g.selectAll(".gtLeg")
-            .text(wl)
-        ;
-
-        var wb = d3.max(g.selectAll(".gtLeg"), function(d) {
-                return d[0].clientWidth || d[0].getComputedTextLength();
-            }) + 4;
-
-        g.selectAll("rect")
-            .style("fill", legColor)
-            .attr("width", wb)
-        ;
-
-        g.selectAll(".gttLeg")
-            .attr("transform", "translate(" + [wb + 2, 12] + ")")
-        ;
-
-        g.sort(sortLegK).sort(sortLeg)
-            .style("visibility", function(d, i) {
-                return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
-            })
-            //.transition()
-            //.duration(500)
-            .attr("transform", function(d, i) {
-                return "translate(" + [0, i * 18] + ")";
-            })
-        ;
-
-    }
+    // function updateLegend() {
+    //     if (!lLeg || lLeg.empty())
+    //         return;
+    //
+    //     var g = lLeg.selectAll(".gLeg");
+    //
+    //     function wl(d) {
+    //         return d.value.now.length;
+    //     }
+    //
+    //     g.selectAll(".gtLeg")
+    //         .text(wl)
+    //     ;
+    //
+    //     var wb = d3.max(g.selectAll(".gtLeg"), function(d) {
+    //             return d[0].clientWidth || d[0].getComputedTextLength();
+    //         }) + 4;
+    //
+    //     g.selectAll("rect")
+    //         .style("fill", legColor)
+    //         .attr("width", wb)
+    //     ;
+    //
+    //     g.selectAll(".gttLeg")
+    //         .attr("transform", "translate(" + [wb + 2, 12] + ")")
+    //     ;
+    //
+    //     g.sort(sortLegK).sort(sortLeg)
+    //         .style("visibility", function(d, i) {
+    //             return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
+    //         })
+    //         //.transition()
+    //         //.duration(500)
+    //         .attr("transform", function(d, i) {
+    //             return "translate(" + [0, i * 18] + ")";
+    //         })
+    //     ;
+    //
+    // }
 
     var tooltip;
 
@@ -1348,7 +1348,7 @@ var ONE_SECOND = 1000,
                 .style("left", event.pageX > _w / 2 ? (event.pageX - tooltip.node().clientWidth - 16) + "px" : (event.pageX + 16) + "px")
             ;
         }
-        updateLegend();
+        // updateLegend();
     }
 
     function movem(d) {
@@ -1463,7 +1463,7 @@ var ONE_SECOND = 1000,
         d3.select(dom.node().parentNode).select("#s").remove();
         // lHis = null;
         lCom = null;
-        lLeg = null;
+        // lLeg = null;
 
         layer = d3.select(dom.node().parentNode).append("div").attr("id", "s")
             .append("svg").attr('width', w).attr("height", h);
@@ -1564,7 +1564,7 @@ var ONE_SECOND = 1000,
             .nodes([])
         ;
 
-        initLegend();
+        // initLegend();
 
         stop = false;
         pause = false;
