@@ -300,7 +300,7 @@ var ONE_SECOND = 1000,
 
         asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
 
-        vis.pb.step(stepDate).label(shortTimeFormat(dr));
+        // vis.pb.step(stepDate).label(shortTimeFormat(dr));
 
         if (dl >= dateRange[1]) {
             // updateExtHistogram();
@@ -309,8 +309,11 @@ var ONE_SECOND = 1000,
             }
             return;
         } else {
-            if (!visTurn.length && setting.skipEmptyDate)
+            if (!visTurn.length && setting.skipEmptyDate){
+                console.log('recursion loop');
                 loop();
+            }
+
         }
 
         // updateExtHistogram();
@@ -1529,10 +1532,10 @@ var ONE_SECOND = 1000,
                     .remove();
             };
 
-        vis.pb.show()
-            .pos(0)
-            .max(dateRange[1] - dateRange[0])
-            .label(shortTimeFormat(dateRange[0]));
+        // vis.pb.show()
+        //     .pos(0)
+        //     .max(dateRange[1] - dateRange[0])
+        //     .label(shortTimeFormat(dateRange[0]));
 
         links = d3.map({});
         regionLinks = [];
