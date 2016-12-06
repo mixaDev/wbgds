@@ -277,9 +277,9 @@
     //     setting.showCountExt = this.checked;
     // });
 
-    d3.select("#chEdge").on("change", function(d) {
-        setting.showEdge = this.checked;
-    });
+    // d3.select("#chEdge").on("change", function(d) {
+    //     setting.showEdge = this.checked;
+    // });
 
     d3.select("#chTrack").on("change", function(d) {
         setting.showTrack = this.checked;

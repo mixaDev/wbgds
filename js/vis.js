@@ -50,7 +50,7 @@ var setting = {
     , skipEmptyDate : true // skip empty date
     , blendingLighter : false
     , showTrack : true // show tracks
-    , showEdge : false // show an edge
+    // , showEdge : false // show an edge
     , groupByRegion : false
     , fadingTail : true
 };
@@ -683,46 +683,46 @@ var ONE_SECOND = 1000,
             c, x, y, s;
 
 
-        if (setting.showEdge || selected){
-            n = links.entries();
-            if (!setting.showEdge)
-                n = n.filter(function(d) {
-                    return d.key.indexOf(selected.id) >= 0;
-                });
-
-            l = n.length;
-
-            bufCtx.save();
-            bufCtx.lineCap="round";
-            bufCtx.lineJoin="round";
-
-            while(--l > -1) {
-                d = n[l].value;
-                src = d.source;
-                trg = d.target;
-                j = src.type == typeNode.child;
-
-                c = curColor(j ? src : trg);
-
-                bufCtx.beginPath();
-                bufCtx.strokeStyle = c.toString();
-                bufCtx.lineWidth = (radius(nr(d)) * 3)  || 1;
-
-                var sx = j ? trg.x : src.x,
-                    sy = j ? trg.y : src.y,
-                    tx = !j ? trg.x : src.x,
-                    ty = !j ? trg.y : src.y;
-
-                bufCtx.moveTo(sx, sy);
-                var x3 = .3 * ty - .3 * sy + .8 * sx + .2 * tx,
-                    y3 = .8 * sy + .2 * ty - .3 * tx + .3 * sx,
-                    x4 = .3 * ty - .3 * sy + .2 * sx + .8 * tx,
-                    y4 = .2 * sy + .8 * ty - .3 * tx + .3 * sx;
-                bufCtx.bezierCurveTo(x3, y3, x4, y4, tx, ty);
-                bufCtx.stroke();
-            }
-            bufCtx.restore();
-        }
+        // if (setting.showEdge || selected){
+        //     n = links.entries();
+        //     if (!setting.showEdge)
+        //         n = n.filter(function(d) {
+        //             return d.key.indexOf(selected.id) >= 0;
+        //         });
+        //
+        //     l = n.length;
+        //
+        //     bufCtx.save();
+        //     bufCtx.lineCap="round";
+        //     bufCtx.lineJoin="round";
+        //
+        //     while(--l > -1) {
+        //         d = n[l].value;
+        //         src = d.source;
+        //         trg = d.target;
+        //         j = src.type == typeNode.child;
+        //
+        //         c = curColor(j ? src : trg);
+        //
+        //         bufCtx.beginPath();
+        //         bufCtx.strokeStyle = c.toString();
+        //         bufCtx.lineWidth = (radius(nr(d)) * 3)  || 1;
+        //
+        //         var sx = j ? trg.x : src.x,
+        //             sy = j ? trg.y : src.y,
+        //             tx = !j ? trg.x : src.x,
+        //             ty = !j ? trg.y : src.y;
+        //
+        //         bufCtx.moveTo(sx, sy);
+        //         var x3 = .3 * ty - .3 * sy + .8 * sx + .2 * tx,
+        //             y3 = .8 * sy + .2 * ty - .3 * tx + .3 * sx,
+        //             x4 = .3 * ty - .3 * sy + .2 * sx + .8 * tx,
+        //             y4 = .2 * sy + .8 * ty - .3 * tx + .3 * sx;
+        //         bufCtx.bezierCurveTo(x3, y3, x4, y4, tx, ty);
+        //         bufCtx.stroke();
+        //     }
+        //     bufCtx.restore();
+        // }
 
         if (setting.showChild) {
             n = _force.nodes()
