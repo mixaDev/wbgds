@@ -281,15 +281,15 @@
     //     setting.showEdge = this.checked;
     // });
 
-    d3.select("#chTrack").on("change", function(d) {
-        setting.showTrack = this.checked;
-    });
+    // d3.select("#chTrack").on("change", function(d) {
+    //     setting.showTrack = this.checked;
+    // });
+    //
+    // d3.select("#chTail").on("change", function(d) {
+    //     setting.fadingTail = this.checked;
+    // });
 
-    d3.select("#chTail").on("change", function(d) {
-        setting.fadingTail = this.checked;
-    });
-
-    d3.select("#fs").attr("href", document.location);
+    // d3.select("#fs").attr("href", document.location);
 
     var imgPreloader = d3.select("#imgPreloader"),
         btnStart = d3.select("#btnStart").on('click', function() {
