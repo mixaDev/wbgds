@@ -9,17 +9,18 @@
     //         window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
     // }
 
-    if (!window.requestAnimationFrame)
+    // if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            // var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var timeToCall = Math.max(40, (currTime - lastTime));
             var id = window.setTimeout(function() { callback(currTime + timeToCall); },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
-    if (!window.cancelAnimationFrame)
+    // if (!window.cancelAnimationFrame)
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
         };
@@ -118,8 +119,8 @@ var ONE_SECOND = 1000,
         layer,
 
         valid,
-        pause,
-        stop,
+        // pause,
+        // stop,
 
         particle,
         defImg,
@@ -154,8 +155,8 @@ var ONE_SECOND = 1000,
 
 
     function reCalc(d) {
-        if (stop)
-            return;
+        // if (stop)
+        //     return;
 
         lCom.showMessage(d.supplier.shortName + ' to ' + d.borrower.shortName + ' -> ' + d.project.name);
 
@@ -274,16 +275,16 @@ var ONE_SECOND = 1000,
 
     function loop() {
         console.log('loop');
-        if (stop) {
-            clearTimeout(_worker);
-            return;
-        }
+        // if (stop) {
+        //     clearTimeout(_worker);
+        //     return;
+        // }
 
-        if (pause) {
-            clearTimeout(_worker);
-            _worker = setTimeout(loop, ONE_SECOND);
-            return;
-        }
+        // if (pause) {
+        //     clearTimeout(_worker);
+        //     _worker = setTimeout(loop, ONE_SECOND);
+        //     return;
+        // }
 
         var dl, dr;
 
@@ -1566,25 +1567,25 @@ var ONE_SECOND = 1000,
 
         // initLegend();
 
-        stop = false;
-        pause = false;
+        // stop = false;
+        // pause = false;
 
         run();
         _force.start();
         _forceBase.start();
     };
 
-    vis.pauseShow = function() {
-        pause = true;
-    };
+    // vis.pauseShow = function() {
+    //     pause = true;
+    // };
 
-    vis.stopShow = function() {
-        stop = true;
-    };
+    // vis.stopShow = function() {
+    //     stop = true;
+    // };
 
-    vis.resumeShow = function() {
-        pause = false;
-    };
+    // vis.resumeShow = function() {
+    //     pause = false;
+    // };
 
     vis.resize = function(w, h) {
         _w = w;

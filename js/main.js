@@ -127,6 +127,7 @@
     }
 
     function initItem(d) {
+        // console.log(d)
         // Convert strings to numbers.
         d.value = d.basevalue = parseInt(d["Total Contract Amount (USD)"].substring(1));
         d.valueOf = value;
@@ -259,13 +260,13 @@
 
         vis.pb.width(w).height(18).textPosition("middle").max(0);
 
-        imgPreloader.hide();
+        // imgPreloader.hide();
 
         setting.zoom = zoom;
 
         vis.runShow(_data, div, w, h, setting);
-        btnPause.show();
-        btnStop.show();
+        // btnPause.show();
+        // btnStop.show();
         //vis.stopShow();
     }
 
@@ -291,108 +292,108 @@
 
     // d3.select("#fs").attr("href", document.location);
 
-    var imgPreloader = d3.select("#imgPreloader"),
-        btnStart = d3.select("#btnStart").on('click', function() {
-            vis.resumeShow();
-            btnRestart.hide();
-            btnStart.hide();
-            btnPause.show();
-            btnStop.show();
-        }),
-        btnRestart = d3.select("#btnRestart").on('click', function() {
-            vis.stopShow();
-            btnRestart.hide();
-            btnStart.hide();
-            btnPause.show();
-            btnStop.show();
-            vis.runShow(_data, div, w, h, setting);
-        }),
-        btnPause = d3.select("#btnPause").on('click', function() {
-            vis.pauseShow();
-            btnRestart.hide();
-            btnPause.hide();
-            btnStart.show();
-        }),
-        btnStop = d3.select("#btnStop").on('click', function() {
-            vis.stopShow();
-            btnRestart.show();
-            btnPause.hide();
-            btnStart.hide();
-            btnStop.hide();
-        }),
-        btnReload = d3.select("#btnReload").on('click', function() {
-            vis.stopShow();
-            btnRestart.hide();
-            btnReload.hide();
-            btnStart.hide();
-            btnPause.hide();
-            btnStart.hide();
-            imgPreloader.show();
-            d3.csv('request/' + fy + '.csv', request);
-        })
-        ;
+    // var imgPreloader = d3.select("#imgPreloader"),
+    //     btnStart = d3.select("#btnStart").on('click', function() {
+    //         vis.resumeShow();
+    //         btnRestart.hide();
+    //         btnStart.hide();
+    //         btnPause.show();
+    //         btnStop.show();
+    //     }),
+    //     btnRestart = d3.select("#btnRestart").on('click', function() {
+    //         vis.stopShow();
+    //         btnRestart.hide();
+    //         btnStart.hide();
+    //         btnPause.show();
+    //         btnStop.show();
+    //         vis.runShow(_data, div, w, h, setting);
+    //     }),
+    //     btnPause = d3.select("#btnPause").on('click', function() {
+    //         vis.pauseShow();
+    //         btnRestart.hide();
+    //         btnPause.hide();
+    //         btnStart.show();
+    //     }),
+    //     btnStop = d3.select("#btnStop").on('click', function() {
+    //         vis.stopShow();
+    //         btnRestart.show();
+    //         btnPause.hide();
+    //         btnStart.hide();
+    //         btnStop.hide();
+    //     }),
+    //     btnReload = d3.select("#btnReload").on('click', function() {
+    //         vis.stopShow();
+    //         btnRestart.hide();
+    //         btnReload.hide();
+    //         btnStart.hide();
+    //         btnPause.hide();
+    //         btnStart.hide();
+    //         imgPreloader.show();
+    //         d3.csv('request/' + fy + '.csv', request);
+    //     })
+    //     ;
 
-    [btnStart, btnRestart,
-        btnPause, btnStop,
-        btnReload, imgPreloader].forEach(function(d) {
-        d.hide = function() {
-            d.style("display", "none");
-        };
-        d.show = function() {
-            d.style("display", null);
-        };
-    });
+    // [btnStart, btnRestart,
+    //     btnPause, btnStop,
+    //     btnReload, imgPreloader].forEach(function(d) {
+    //     d.hide = function() {
+    //         d.style("display", "none");
+    //     };
+    //     d.show = function() {
+    //         d.style("display", null);
+    //     };
+    // });
 
-    btnPause.hide();
-    btnStop.hide();
+    // btnPause.hide();
+    // btnStop.hide();
 
-    d3.select("#typeParam")
-        .on("change", function(d) {
-            cat = this.value;
-            btnRestart.show();
-        })
-        .selectAll('option')
-        .data([
-            "Major Sector",
-            "Procurement Category",
-            "Procurement Method",
-            "Procurement Type",
-            "Product line"
-        ])
-        .enter()
-        .append("option")
-        .attr("selected", function(d) { return d == cat ? "selected" : null; })
-        .attr("value", function(d) { return d; })
-        .text(function(d) { return d; })
-    ;
+    // d3.select("#typeParam")
+    //     .on("change", function(d) {
+    //         cat = this.value;
+    //         btnRestart.show();
+    //     })
+    //     .selectAll('option')
+    //     .data([
+    //         "Major Sector",
+    //         "Procurement Category",
+    //         "Procurement Method",
+    //         "Procurement Type",
+    //         "Product line"
+    //     ])
+    //     .enter()
+    //     .append("option")
+    //     .attr("selected", function(d) { return d == cat ? "selected" : null; })
+    //     .attr("value", function(d) { return d; })
+    //     .text(function(d) { return d; })
+    // ;
 
-    var param;
-    if (document.location.hash && document.location.hash.indexOf('year') > -1) {
-        param = {};
-        document.location.hash.replace("#", "")
-            .split('&').forEach(function(d) {
-            d = d.split('=');
-            param[d[0]] = d[1];
-        });
-        fy = +param.year;
-    }
+    // var param;
+    // if (document.location.hash && document.location.hash.indexOf('year') > -1) {
+    //     param = {};
+    //     document.location.hash.replace("#", "")
+    //         .split('&').forEach(function(d) {
+    //         d = d.split('=');
+    //         param[d[0]] = d[1];
+    //     });
+    //     fy = +param.year;
+    // }
 
-    d3.select("#fiscalYear")
-        .on("change", function(d) {
-            fy = +this.value;
+    // d3.select("#fiscalYear")
+    //     .on("change", function(d) {
+    //         fy = +this.value;
+    //
+    //         btnReload.show();
+    //     })
+    //     .selectAll('option')
+    //     .data([2007, 2008, 2009, 2010, 2011, 2012, 2013])
+    //     .enter()
+    //     .append("option")
+    //     .attr("selected", function(d) { return d == fy ? "selected" : null; })
+    //     .attr("value", function(d) { return d; })
+    //     .text(function(d) { return d; })
+    // ;
 
-            btnReload.show();
-        })
-        .selectAll('option')
-        .data([2007, 2008, 2009, 2010, 2011, 2012, 2013])
-        .enter()
-        .append("option")
-        .attr("selected", function(d) { return d == fy ? "selected" : null; })
-        .attr("value", function(d) { return d; })
-        .text(function(d) { return d; })
-    ;
-
-    imgPreloader.show();
+    // imgPreloader.show();
 
     d3.json("world-countries.json", function (error, collection) {
 
@@ -402,11 +403,6 @@
             .attr("class", "feature")
         ;
 
-        /*            .on("mouseover", overpath)
-         .on("mousemove", moverpath)
-         //.on("click", clickPath)
-         .on("mouseout", outpath)
-         */
         d3.csv('request/' + fy + '.csv', request);
     });
 
