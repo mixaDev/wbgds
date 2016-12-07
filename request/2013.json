@@ -36,7 +36,7 @@
         "fieldName" : "fiscal_year"
       }, {
         "name" : "Region",
-        "fieldName" : "region",
+        "fieldName" : "region"
       }, {
         "name" : "Borrower Country",
         "description" : "Country to which loan or credit has been issued. Loans to the IFC are included under the country “World”.",

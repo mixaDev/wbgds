@@ -3,24 +3,28 @@
 (function(window) {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
-    // for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-    //     window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-    //     window.cancelAnimationFrame =
-    //         window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    // }
+    var id;
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame =
+            window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
 
-    // if (!window.requestAnimationFrame)
+    if (!window.requestAnimationFrame)
         window.requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             // var timeToCall = Math.max(0, 16 - (currTime - lastTime));
             var timeToCall = Math.max(40, (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+            clearTimeout(id);
+            id = window.setTimeout(function() {
+                callback();
+            },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
-    // if (!window.cancelAnimationFrame)
+    if (!window.cancelAnimationFrame)
         window.cancelAnimationFrame = function(id) {
             clearTimeout(id);
         };
@@ -45,9 +49,6 @@ var setting = {
     , showPaddingCircle : false // show circle of padding
     , useImage : false // show base's image
     , showChild : true // show a child
-    , showParent : false // show a parent
-    , showLabel : false // show base name
-    , showMessage : false // show commit message
     , skipEmptyDate : true // skip empty date
     , blendingLighter : false
     , showTrack : true // show tracks
@@ -59,14 +60,18 @@ var setting = {
 var asyncForEach = function(items, fn, time) {
     if (!(items instanceof Array))
         return;
+    var timeout;
 
     var workArr = items.reverse().concat();
 
     function loop() {
         if (workArr.length > 0)
             fn(workArr.shift(), workArr);
-        if (workArr.length > 0)
-            setTimeout(loop, time || 1);
+        if (workArr.length > 0){
+            clearTimeout(timeout);
+            timeout = setTimeout(loop, time || 1);
+        }
+
     }
     loop();
 };
@@ -110,17 +115,11 @@ var ONE_SECOND = 1000,
         links,
         regionLinks,
 
-        lCom,
-        // lLeg,
-        // lHis,
-
         canvas, ctx,
         bufCanvas, bufCtx,
         layer,
 
         valid,
-        // pause,
-        // stop,
 
         particle,
         defImg,
@@ -155,11 +154,7 @@ var ONE_SECOND = 1000,
 
 
     function reCalc(d) {
-        // if (stop)
-        //     return;
-
-        lCom.showMessage(d.supplier.shortName + ' to ' + d.borrower.shortName + ' -> ' + d.project.name);
-
+        
         var l = d.nodes.length,
             n, a, fn;
 
@@ -256,8 +251,6 @@ var ONE_SECOND = 1000,
             }
         }
 
-        // updateLegend(/*d.sha*/);
-
         _force.nodes(nodes.filter(function(d) {
                 return d.type != typeNode.parent && (d.visible || d.opacity);
             })//.sort(sortBySize)
@@ -275,16 +268,6 @@ var ONE_SECOND = 1000,
 
     function loop() {
         console.log('loop');
-        // if (stop) {
-        //     clearTimeout(_worker);
-        //     return;
-        // }
-
-        // if (pause) {
-        //     clearTimeout(_worker);
-        //     _worker = setTimeout(loop, ONE_SECOND);
-        //     return;
-        // }
 
         var dl, dr;
 
@@ -292,18 +275,13 @@ var ONE_SECOND = 1000,
         dr = dl + stepDate;
         dateRange[0] = dr;
 
-        // appendExtLegend(shortTimeFormat(dr));
-
         var visTurn = _data.filter(function (d) {
             return d.date >= dl && d.date < dr;
         });
 
         asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
 
-        // vis.pb.step(stepDate).label(shortTimeFormat(dr));
-
         if (dl >= dateRange[1]) {
-            // updateExtHistogram();
             if (typeof _worker !== "undefined") {
                 clearTimeout(_worker);
             }
@@ -315,19 +293,20 @@ var ONE_SECOND = 1000,
             }
 
         }
-
-        // updateExtHistogram();
+        
+        clearTimeout(_worker);
         _worker = setTimeout(loop, ONE_SECOND);
     }
 
     function run() {
         console.log('run');
 
-        if (typeof _worker !== "undefined")
-            clearTimeout(_worker);
+        // if (typeof _worker !== "undefined")
+        //     clearTimeout(_worker);
 
         render();
 
+        clearTimeout(_worker);
         _worker = setTimeout(loop, ONE_SECOND);
     }
 
@@ -686,48 +665,6 @@ var ONE_SECOND = 1000,
             d, beg,
             c, x, y, s;
 
-
-        // if (setting.showEdge || selected){
-        //     n = links.entries();
-        //     if (!setting.showEdge)
-        //         n = n.filter(function(d) {
-        //             return d.key.indexOf(selected.id) >= 0;
-        //         });
-        //
-        //     l = n.length;
-        //
-        //     bufCtx.save();
-        //     bufCtx.lineCap="round";
-        //     bufCtx.lineJoin="round";
-        //
-        //     while(--l > -1) {
-        //         d = n[l].value;
-        //         src = d.source;
-        //         trg = d.target;
-        //         j = src.type == typeNode.child;
-        //
-        //         c = curColor(j ? src : trg);
-        //
-        //         bufCtx.beginPath();
-        //         bufCtx.strokeStyle = c.toString();
-        //         bufCtx.lineWidth = (radius(nr(d)) * 3)  || 1;
-        //
-        //         var sx = j ? trg.x : src.x,
-        //             sy = j ? trg.y : src.y,
-        //             tx = !j ? trg.x : src.x,
-        //             ty = !j ? trg.y : src.y;
-        //
-        //         bufCtx.moveTo(sx, sy);
-        //         var x3 = .3 * ty - .3 * sy + .8 * sx + .2 * tx,
-        //             y3 = .8 * sy + .2 * ty - .3 * tx + .3 * sx,
-        //             x4 = .3 * ty - .3 * sy + .2 * sx + .8 * tx,
-        //             y4 = .2 * sy + .8 * ty - .3 * tx + .3 * sx;
-        //         bufCtx.bezierCurveTo(x3, y3, x4, y4, tx, ty);
-        //         bufCtx.stroke();
-        //     }
-        //     bufCtx.restore();
-        // }
-
         if (setting.showChild) {
             n = _force.nodes()
                 .filter(filterVisible)
@@ -853,92 +790,17 @@ var ONE_SECOND = 1000,
                 bufCtx.stroke();
             }
         }
-
-        if (setting.showParent || setting.showLabel) {
-            n = _forceBase.nodes().filter(filterVisible).sort(sortByOpacity);
-            l = n.length;
-
-            i = 100;
-
-            bufCtx.globalAlpha = i * .01;
-
-            while(--l > -1) {
-                d = n[l];
-
-                if (i != curOpacity(d)) {
-                    i = curOpacity(d);
-                    bufCtx.globalAlpha = i * .01;
-                }
-
-                x = Math.floor(d.x);
-                y = Math.floor(d.y);
-
-                if (setting.showParent) {
-                    c = curColor(d);
-                    bufCtx.save();
-
-                    if (setting.showPaddingCircle) {
-                        bufCtx.beginPath();
-                        bufCtx.strokeStyle = "none";
-                        bufCtx.fillStyle = "#ff0000";
-                        bufCtx.arc(x, y, nr(d) + setting.padding, 0, PI_CIRCLE, true);
-                        bufCtx.closePath();
-                        bufCtx.fill();
-                        bufCtx.stroke();
-                    }
-
-                    bufCtx.beginPath();
-                    bufCtx.strokeStyle = "transparent";
-                    bufCtx.fillStyle = setting.useImage ? "transparent" : c;
-                    bufCtx.arc(x, y, nr(d), 0, PI_CIRCLE, true);
-                    bufCtx.closePath();
-                    bufCtx.fill();
-                    bufCtx.stroke();
-                    img = d.img && d.img.width > 0 && d.img.height > 0 ? d.img : defImg;
-                    if (setting.useImage && img.width > 0 && img.height > 0) {
-                        bufCtx.clip();
-                        iw = img.width;
-                        ih = img.height;
-
-                        if (iw == ih) {
-                            ih = iw = nr(d);
-                        }
-                        else if (iw > ih) {
-                            ih = (ih/iw) * nr(d) * 1.2;
-                            iw = nr(d) * 1.2;
-                        }
-                        else {
-                            iw = (iw/ih) * nr(d) * 1.2;
-                            ih = nr(d) * 1.2;
-                        }
-
-
-                        bufCtx.drawImage(img, x - iw, y - ih, iw * 2, ih * 2);
-                    }
-
-                    bufCtx.restore();
-                }
-
-                if (setting.showLabel) {
-                    c = d.flash ? "white" : "gray";
-
-                    bufCtx.fillStyle = c;
-                    bufCtx.fillText(d.nodeValue.shortName, x, y + nr(d) * 1.5);
-                }
-            }
-        }
+        
         bufCtx.restore();
     }
 
     function render() {
-        console.log('render');
-        requestAnimationFrame(render);
-
-        // lHis && lHis.style("display", setting.showHistogram ? null : "none");
-        // lLeg && lLeg.style("display", setting.showCountExt ? null : "none");
 
         if (valid)
             return;
+
+        console.log('render');
+        requestAnimationFrame(render);
 
         valid = true;
 
@@ -1059,221 +921,6 @@ var ONE_SECOND = 1000,
         };
     }
 
-    // function appendExtLegend(key){
-    //     if (!layer)
-    //         return;
-    //
-    //     var data = [],
-    //         w3 = _w / 3,
-    //         ml = 5,//_w * .01,
-    //         mb = 18,
-    //         h2 = (_h / 2) - mb,
-    //         bw = 2,
-    //         ny
-    //         ;
-    //
-    //     var y = d3.scale.linear()
-    //         .range([0, h2])
-    //         .domain([0, extMax]);
-    //
-    //     lHis = (lHis || layer.insert("g", ":first-child"))
-    //         .attr("width", w3)
-    //         .attr("height", h2)
-    //         .attr("transform", "translate(" + [ ml , _h - h2 - mb ] + ")");
-    //
-    //     if (!key)
-    //         return;
-    //
-    //     ny = h2;
-    //     extHash.forEach(function(k, d) {
-    //         var obj = {
-    //             key : k,
-    //             h : y(d.currents[key] || 0),
-    //             color : d.color
-    //         };
-    //         obj.y = ny -= obj.h;
-    //         data.push(obj);
-    //     });
-    //
-    //     updateExtHistogram();
-    //
-    //     var g = lHis.append("g")
-    //         .attr("class", "colStack")
-    //         .datum({ x : 0, max : w3, w : bw })
-    //         .style("opacity", 0);
-    //    
-    //     g.selectAll("rect")
-    //         .data(data)
-    //         .enter()
-    //         .append("rect")
-    //         .attr("x", 0)
-    //         .attr("y", function(d) {  return d.y;  })
-    //         .attr("width", bw)
-    //         .attr("height", function(d) { return d.h; })
-    //         .attr("fill", function(d) { return d.color; })
-    //     ;
-    //    
-    //     g.style("opacity", 1)
-    //         .attr("transform", function(d) {
-    //             return "translate(" + [ d.x, 0] + ")";
-    //         });
-    // }
-
-    // function updateExtHistogram() {
-    //     if (!lHis || lHis.selectAll(".colStack").empty())
-    //         return;
-    //
-    //     lHis.selectAll(".colStack")
-    //         .attr("transform", function(d) {
-    //             return "translate(" + [ d.x += d.w/2, 0] + ")";
-    //         })
-    //         .filter(function(d) {
-    //             return d.x > d.max;
-    //         })
-    //         .remove()
-    //     ;
-    // }
-
-    function lme(d) {
-        selectedExt = d.value;
-
-        tooltip.html([
-            "<b style='text-shadow: 1px 1px 1px #000; color:",
-            d.value.color,
-            "'>", d.key, "</b>",
-            "<hr>",
-            "Number of contract: <b>",
-            d.value.now.length,
-            "</b><br/>Money ($): <b>",
-            th(d3.sum(d3.values(d.value.values))),
-            "M.</b><br/>"
-        ].join(''));
-        tooltip.style("display", "block");
-        // updateLegend();
-    }
-
-    function lml() {
-        selectedExt = null;
-        tooltip.style("display", null);
-        // updateLegend();
-    }
-
-    function lmm(d) {
-        moveToolTip(d, d3.event);
-    }
-
-    function legColor(d) {
-        var ext = selectedExt;
-        if (!ext && selected
-            && selected.type == typeNode.child
-            && selected.ext)
-            ext = selected.ext;
-
-        return ext
-            ? ext == d.value
-            ? d.value.color
-            : colorless
-            : d.value.color;
-    }
-
-    // function initLegend() {
-    //     if (!layer)
-    //         return;
-    //
-    //     var mt = 48,
-    //         ml = 5,//_w * .01,
-    //         h2 = _h / 2 - mt,
-    //         w3 = _w / 3
-    //         ;
-    //
-    //     lLeg = (lLeg || layer.append("g"))
-    //         .attr("width", w3)
-    //         .attr("height", h2)
-    //         .attr("transform", "translate(" + [ml, mt] + ")");
-    //
-    //     lLeg.selectAll("*").remove();
-    //
-    //     var g = lLeg.selectAll(".gLeg")
-    //         .data(extHash.entries(), function(d) { return d.key; });
-    //
-    //     g.exit().remove();
-    //
-    //     g.enter().append("g")
-    //         .on("mouseover", lme)
-    //         .on("mousemove", lmm)
-    //         .on("mouseout", lml)
-    //         .attr("class", "gLeg")
-    //         .attr("transform", function(d, i) {
-    //             return "translate(" + [0, i * 18] + ")";
-    //         })
-    //         .style("visibility", "hidden")
-    //     ;
-    //     g.append("rect")
-    //         .attr("height", 16)
-    //         .style("fill", legColor)
-    //     ;
-    //     g.append("text")
-    //         .attr("class", "gttLeg")
-    //         .style("font-size", "13px")
-    //         .text(function(d) { return d.key; })
-    //         .style("fill", function(d) { return d3.rgb(d.value.color).brighter().brighter(); })
-    //     ;
-    //
-    //     g.append("text")
-    //         .attr("class", "gtLeg")
-    //         .style("font-size", "11px")
-    //         .attr("transform", "translate(" + [2, 12] + ")")
-    //     ;
-    // }
-
-    function sortLeg(b, a) {
-        return d3.ascending(a.value.now.length, b.value.now.length);
-    }
-
-    function sortLegK(b, a) {
-        return d3.ascending(a.key, b.key);
-    }
-
-    // function updateLegend() {
-    //     if (!lLeg || lLeg.empty())
-    //         return;
-    //
-    //     var g = lLeg.selectAll(".gLeg");
-    //
-    //     function wl(d) {
-    //         return d.value.now.length;
-    //     }
-    //
-    //     g.selectAll(".gtLeg")
-    //         .text(wl)
-    //     ;
-    //
-    //     var wb = d3.max(g.selectAll(".gtLeg"), function(d) {
-    //             return d[0].clientWidth || d[0].getComputedTextLength();
-    //         }) + 4;
-    //
-    //     g.selectAll("rect")
-    //         .style("fill", legColor)
-    //         .attr("width", wb)
-    //     ;
-    //
-    //     g.selectAll(".gttLeg")
-    //         .attr("transform", "translate(" + [wb + 2, 12] + ")")
-    //     ;
-    //
-    //     g.sort(sortLegK).sort(sortLeg)
-    //         .style("visibility", function(d, i) {
-    //             return !wl(d) || i * 18 > lLeg.attr("height") ? "hidden" : "visible";
-    //         })
-    //         //.transition()
-    //         //.duration(500)
-    //         .attr("transform", function(d, i) {
-    //             return "translate(" + [0, i * 18] + ")";
-    //         })
-    //     ;
-    //
-    // }
-
     var tooltip;
 
     function showToolTip(d) {
@@ -1352,7 +999,6 @@ var ONE_SECOND = 1000,
                 .style("left", event.pageX > _w / 2 ? (event.pageX - tooltip.node().clientWidth - 16) + "px" : (event.pageX + 16) + "px")
             ;
         }
-        // updateLegend();
     }
 
     function movem(d) {
@@ -1380,7 +1026,6 @@ var ONE_SECOND = 1000,
         moveToolTip(d, d3.event);
     }
 
-
     function move() {
         lastEvent.translate = d3.event.translate.slice(0);
         lastEvent.scale = d3.event.scale;
@@ -1397,7 +1042,7 @@ var ONE_SECOND = 1000,
     }
 
     vis.runShow = function(data, dom, w, h, asetting) {
-        console.log(data, dom, w, h, asetting);
+        // console.log(data, dom, w, h, asetting);
 
         if (typeof _worker !== "undefined")
             clearTimeout(_worker);
@@ -1465,9 +1110,6 @@ var ONE_SECOND = 1000,
         bufCtx.textAlign = "center";
 
         d3.select(dom.node().parentNode).select("#s").remove();
-        // lHis = null;
-        lCom = null;
-        // lLeg = null;
 
         layer = d3.select(dom.node().parentNode).append("div").attr("id", "s")
             .append("svg").attr('width', w).attr("height", h);
@@ -1482,60 +1124,6 @@ var ONE_SECOND = 1000,
             .attr("y", 0)
             .style("fill", "#ffffff")
             .style("fill-opacity", 0);
-
-        // lHis && lHis.selectAll("*").remove();
-
-        lCom = (
-            lCom || layer.append("g")
-                .attr("width", 10)
-                .attr("height", 14)
-        )
-            .attr("transform", "translate(" + [w/2, h - 18] + ")")
-        ;
-        lCom.visible = !setting.showMessage;
-
-        lCom.selectAll("text").remove();
-        lCom.showMessage = lCom.showMessage || function(text) {
-                if (setting.showMessage && !lCom.visible) {
-                    lCom.visible = true;
-                    lCom.style("display", null);
-                }
-                else if (!setting.showMessage && lCom.visible) {
-                    lCom.visible = false;
-                    lCom.style("display", "none");
-                }
-
-                if (!text)
-                    return;
-
-                lCom.append("text")
-                    .attr("text-anchor", "middle")
-                    .attr("class", "com-mess")
-                    .attr("transform", "translate("+ [0, -lCom.node().childElementCount * 14] +")")
-                    .text(text.split("\n")[0].substr(0, 100))
-                    .transition()
-                    .delay(500)
-                    .duration(2000)
-                    .style("fill-opacity", 1)
-                    .duration(200)
-                    .style("font-size", "11.2pt")
-                    .transition()
-                    .duration(1500)
-                    .style("fill-opacity", .3)
-                    .style("font-size", "11pt")
-                    .each("end", function() {
-                        lCom.selectAll("text").each(function(d, i) {
-                            d3.select(this)
-                                .attr("transform", "translate("+ [0, -i * 14] +")");
-                        });
-                    })
-                    .remove();
-            };
-
-        // vis.pb.show()
-        //     .pos(0)
-        //     .max(dateRange[1] - dateRange[0])
-        //     .label(shortTimeFormat(dateRange[0]));
 
         links = d3.map({});
         regionLinks = [];
@@ -1568,30 +1156,9 @@ var ONE_SECOND = 1000,
             .nodes([])
         ;
 
-        // initLegend();
-
-        // stop = false;
-        // pause = false;
-
         run();
         _force.start();
         _forceBase.start();
     };
-
-    // vis.pauseShow = function() {
-    //     pause = true;
-    // };
-
-    // vis.stopShow = function() {
-    //     stop = true;
-    // };
-
-    // vis.resumeShow = function() {
-    //     pause = false;
-    // };
-
-    vis.resize = function(w, h) {
-        _w = w;
-        _h = h;
-    }
+    
 })(vis || (vis = {}));

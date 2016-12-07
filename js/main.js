@@ -1,7 +1,6 @@
 (function() {
     var w, h,
         _data,
-        fy = 2013,
         div
         ;
 
@@ -246,33 +245,19 @@
             .attr("fill", "#fff")
             .attr("transform", ctr);
 
-        // vis.pb = vis.pb || (
-        //         d3.select(document.body)
-        //             .append("div")
-        //             .attr("id", "pb")
-        //             .style("height", "18px")
-        //             .append("svg")
-        //             .attr("width", w)
-        //             .attr("height", 18)
-        //             .append("g")
-        //             .call(d3.helper.progressbar)
-        //     );
-        //
-        // vis.pb.width(w).height(18).textPosition("middle").max(0);
-
         setting.zoom = zoom;
 
         vis.runShow(_data, div, w, h, setting);
     }
 
     d3.json("world-countries.json", function (error, collection) {
-
+        // console.log(collection)
         feature = feature
             .data(collection.features)
             .enter().append("path")
             .attr("class", "feature")
         ;
 
-        d3.csv('request/' + fy + '.csv', request);
+        d3.csv('request/2013.csv', request);
     });
 })();
