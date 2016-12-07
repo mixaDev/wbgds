@@ -40,7 +40,7 @@ var setting = {
     // , showCountExt : false // show table of child's extension
     // , onlyShownExt : true // show only extension which is shown
     // , showHistogram : false // displaying histogram of changed files
-    , showHalo : false // show a child's halo
+    , showHalo : true // show a child's halo
     , padding : 0 // padding around a parent
     , rateOpacity : .5 // rate of decrease of opacity
     , rateFlash : 2.5 // rate of decrease of flash
@@ -267,7 +267,7 @@ var ONE_SECOND = 1000,
     }
 
     function loop() {
-        console.log('loop');
+        // console.log('loop');
 
         var dl, dr;
 
@@ -299,7 +299,7 @@ var ONE_SECOND = 1000,
     }
 
     function run() {
-        console.log('run');
+        // console.log('run');
 
         // if (typeof _worker !== "undefined")
         //     clearTimeout(_worker);
@@ -799,7 +799,7 @@ var ONE_SECOND = 1000,
         if (valid)
             return;
 
-        console.log('render');
+        // console.log('render');
         requestAnimationFrame(render);
 
         valid = true;
@@ -946,41 +946,20 @@ var ONE_SECOND = 1000,
             }
             else {
                 res = [
-                    "Contract: <b>",
-                    d.nodeValue.contract.desc,
-                    "</b><br/>Date: <b>",
-                    shortTimeFormat(d.nodeValue.contract.date),
-                    "</b><hr/>Project: <b>",
-                    "(", d.nodeValue.project.id, ") ",
-                    d.nodeValue.project.name,
-                    "</b><br/>Product line: <b",
-                    cat == "Product line" ? ' style="text-shadow: 0 0 2px rgba(0, 0, 0, .8);color:' + extColor(d.nodeValue[cat]) + '"' : "",
-                    ">",
-                    d.nodeValue.product,
-                    "</b><br/>Major Sector: <b",
-                    cat == "Major Sector" ? ' style="text-shadow: 0 0 2px rgba(0, 0, 0, .8);color:' + extColor(d.nodeValue[cat]) + '"' : "",
-                    ">",
-                    d.nodeValue.sector,
-                    "</b><hr/>Procurement: <b>",
-                    "</b><br/>• Type: <b",
-                    cat == "Procurement Type" ? ' style="text-shadow: 0 0 2px rgba(0, 0, 0, .8);color:' + extColor(d.nodeValue[cat]) + '"' : "",
-                    ">",
-                    d.nodeValue.procurement.type,
-                    "</b><br/>• Method: <b",
-                    cat == "Procurement Method" ? ' style="text-shadow: 0 0 2px rgba(0, 0, 0, .8);color:' + extColor(d.nodeValue[cat]) + '"' : "",
-                    ">",
-                    d.nodeValue.procurement.method,
-                    "</b><br/>• Category: <b",
-                    cat == "Procurement Category" ? ' style="text-shadow: 0 0 2px rgba(0, 0, 0, .8);color:' + extColor(d.nodeValue[cat]) + '"' : "",
-                    ">",
-                    d.nodeValue.procurement.category,
-                    "</b><hr/>Region: <b>",
+                    "Date: <b>",
+                    shortTimeFormat(d.nodeValue.date),
+                    "</b>" +
+                    "<hr/>" +
+                    "Region: <b>",
                     d.nodeValue.Region,
-                    "</b><br/>Supplier: <b>",
+                    "</b><br/>" +
+                    "Supplier: <b>",
                     d.nodeValue.supplier.name,
-                    "</b><br/>Borrower: <b>",
+                    "</b><br/>" +
+                    "Borrower: <b>",
                     d.nodeValue.borrower.name,
-                    "</b><br/>Borrowed ($): <b>",
+                    "</b><br/>" +
+                    "Borrowed ($): <b>",
                     th(+d.nodeValue),
                     "M.</b><br/>"
                 ];
