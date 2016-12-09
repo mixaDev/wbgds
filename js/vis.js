@@ -1,31 +1,31 @@
 "use strict";
 
-(function(window) {
+(function (window) {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     var id;
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
         window.cancelAnimationFrame =
-            window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+            window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
+        window.requestAnimationFrame = function (callback, element) {
             var currTime = new Date().getTime();
             // var timeToCall = Math.max(0, 16 - (currTime - lastTime));
             var timeToCall = Math.max(40, (currTime - lastTime));
             clearTimeout(id);
-            id = window.setTimeout(function() {
-                callback();
-            },
+            id = window.setTimeout(function () {
+                    callback();
+                },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
     if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
+        window.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
 })(window);
@@ -35,27 +35,16 @@ var vis = {},
     ;
 
 var setting = {
-    childLife : 5 // number of steps of life a child
-    , parentLife : 0 // number of steps of life a parent
-    // , showCountExt : false // show table of child's extension
-    // , onlyShownExt : true // show only extension which is shown
-    // , showHistogram : false // displaying histogram of changed files
-    , showHalo : true // show a child's halo
-    , padding : 5 // padding around a parent
-    , rateOpacity : .5 // rate of decrease of opacity
-    , rateFlash : 2.5 // rate of decrease of flash
-    // , sizeChild : 2 // size of child
-    , sizeParent : 0 // size of parent
-    // , showPaddingCircle : false // show circle of padding
-    // , useImage : false // show base's image
-    // , showChild : true // show a child
-    // , skipEmptyDate : true // skip empty date
-    // , blendingLighter : true
-    // , groupByRegion : true
-    // , fadingTail : true
+    childLife: 5 // number of steps of life a child
+    , parentLife: 0 // number of steps of life a parent
+    , showHalo: true // show a child's halo
+    , padding: 5 // padding around a parent
+    , rateOpacity: .5 // rate of decrease of opacity
+    , rateFlash: 2.5 // rate of decrease of flash
+    , sizeParent: 0 // size of parent
 };
 
-var asyncForEach = function(items, fn, time) {
+var asyncForEach = function (items, fn, time) {
     if (!(items instanceof Array))
         return;
     var timeout;
@@ -66,17 +55,18 @@ var asyncForEach = function(items, fn, time) {
         // console.log('loop2');
         if (workArr.length > 0)
             fn(workArr.shift(), workArr);
-        if (workArr.length > 0){
+        if (workArr.length > 0) {
             clearTimeout(timeout);
             timeout = setTimeout(loop, time || 1);
         }
     }
+
     loop();
 };
 
-var shortTimeFormat = (function() {
+var shortTimeFormat = (function () {
     var fd = d3.time.format("%d.%b.%y");
-    return function(ms) {
+    return function (ms) {
         return fd(new Date(ms/* - TIME_ZONE*/));
     }
 })();
@@ -85,7 +75,7 @@ var ONE_SECOND = 1000,
     stepDate = 1 * 24 * 60 * 60 * 1000
     ;
 
-(function(vis) {
+(function (vis) {
 
     var PI_CIRCLE = Math.PI * 2;
 
@@ -139,9 +129,8 @@ var ONE_SECOND = 1000,
     var th = d3.format(",");
 
     var typeNode = {
-        parent : 0,
-        child : 1
-        // region : 2
+        parent: 0,
+        child: 1
     };
 
     defImg = new Image();
@@ -169,7 +158,7 @@ var ONE_SECOND = 1000,
             a.visible = true;
         }
 
-        while(--l > -1) {
+        while (--l > -1) {
             n = d.nodes[l];
 
             if (n.fixed) {
@@ -177,7 +166,7 @@ var ONE_SECOND = 1000,
                 //n.y = yH(n.y);
                 n.x = a.x;
                 n.y = a.y;
-                n.paths = [{x : n.x, y : n.y}];
+                n.paths = [{x: n.x, y: n.y}];
                 n.msize = n.size;
                 n.size *= 3;
             }
@@ -233,35 +222,26 @@ var ONE_SECOND = 1000,
 
             if (!links.has(key))
                 links.set(key, {
-                    key : key,
-                    source : src,
-                    target : trg
+                    key: key,
+                    source: src,
+                    target: trg
                 });
 
             if (n.nodeValue.supplier == n.nodeValue.borrower) {
                 key = n.id + "_" + a.id;
                 if (!links.has(key))
                     links.set(key, {
-                        key : key,
-                        source : trg,
-                        target : src
+                        key: key,
+                        source: trg,
+                        target: src
                     });
             }
         }
 
-        _force.nodes(nodes.filter(function(d) {
+        _force.nodes(nodes.filter(function (d) {
                 return d.type != typeNode.parent && (d.visible || d.opacity);
-            })//.sort(sortBySize)
+            })
         ).start();
-
-        // _forceBase.nodes(nodes.filter(function(d) {
-        //     if (d.type == typeNode.region) {
-        //         d.alive = 1;
-        //         d.opacity = 100;
-        //         d.flash = 100;
-        //     }
-        //     return (d.type == typeNode.parent || (setting.groupByRegion && d.type == typeNode.region)) && (d.visible || d.opacity);
-        // })).start();
     }
 
     function loop() {
@@ -285,21 +265,18 @@ var ONE_SECOND = 1000,
             }
             return;
         } else {
-            if (!visTurn.length /*&& setting.skipEmptyDate*/){
+            if (!visTurn.length) {
                 // console.log('recursion loop');
                 loop();
             }
         }
-        
+
         clearTimeout(_worker);
         _worker = setTimeout(loop, ONE_SECOND);
     }
 
     function run() {
         // console.log('run');
-
-        // if (typeof _worker !== "undefined")
-        //     clearTimeout(_worker);
 
         render();
 
@@ -315,12 +292,6 @@ var ONE_SECOND = 1000,
         var ext = selectedExt;
 
         if (!ext && selected) {
-            // if (selected.type == typeNode.parent) {
-            //     return d.nodeValue.borrower !== selected.nodeValue
-            //     && d.nodeValue.supplier !== selected.nodeValue
-            //         ? d.flash ? colorlessFlash : colorless
-            //         : d.flash ? d.flashColor : d.d3color;
-            // }
             if (selected.ext)
                 ext = selected.ext;
         }
@@ -330,30 +301,11 @@ var ONE_SECOND = 1000,
             : d.flash ? d.flashColor : d.d3color;
     }
 
-    // function curOpacityParent(d) {
-    //     if (selected && selected.type == typeNode.parent) {
-    //         return selected != d && !selected.relations[_parentKey(d.nodeValue)]
-    //             ? 20 : d.opacity;
-    //     }
-    //
-    //     return selected && selected.type == typeNode.child
-    //     && selected.nodeValue.borrower !== d.nodeValue
-    //     && selected.nodeValue.supplier !== d.nodeValue
-    //         ? 20 : d.opacity;
-    // }
-
     function curOpacity(d) {
-        // if (d.type == typeNode.parent)
-        //     return curOpacityParent(d);
 
         var ext = selectedExt;
 
         if (!ext && selected) {
-            // if (selected.type == typeNode.parent) {
-            //     return d.nodeValue.borrower !== selected.nodeValue
-            //     && d.nodeValue.supplier !== selected.nodeValue
-            //         ? 20 : d.opacity;
-            // }
             if (selected.ext)
                 ext = selected.ext;
         }
@@ -373,8 +325,8 @@ var ONE_SECOND = 1000,
     function contain(d, pos) {
         var px = (lastEvent.translate[0] - pos[0]) / lastEvent.scale,
             py = (lastEvent.translate[1] - pos[1]) / lastEvent.scale,
-            r = Math.sqrt( Math.pow( d.x + px , 2) +
-                Math.pow( d.y + py , 2 ) );
+            r = Math.sqrt(Math.pow(d.x + px, 2) +
+                Math.pow(d.y + py, 2));
         return r < (/*d.type == typeNode.parent ? nr(d) * 1.5 : */radius(nr(d)));
     }
 
@@ -391,20 +343,20 @@ var ONE_SECOND = 1000,
         // console.log(d, type)
         var c = type == typeNode.child ? d[cat] : baseColor(d.key),
             ext, x, y,
-            w2 = _w/2,
-            w5 = _w/5,
-            h2 = _h/2,
-            h5 = _h/5
+            w2 = _w / 2,
+            w5 = _w / 5,
+            h2 = _h / 2,
+            h5 = _h / 5
             ;
         if (type == typeNode.child) {
             ext = extHash.get(c);
             if (!ext) {
                 ext = {
-                    all : 0,
-                    currents : {},
-                    values : {},
-                    color : d3.rgb(extColor(c)),
-                    now : []
+                    all: 0,
+                    currents: {},
+                    values: {},
+                    color: d3.rgb(extColor(c)),
+                    now: []
                 };
                 extHash.set(c, ext);
             }
@@ -443,22 +395,22 @@ var ONE_SECOND = 1000,
         }
 
         return {
-            x : x,
-            y : y,
-            id : type + (type == typeNode.child ? _childKey(d) : /*type == typeNode.region ? d :*/ _parentKey(d)),
-            size : type != typeNode.child ? type == typeNode.parent ? setting.sizeParent : 50 : d.size || 2,
-            weight : type != typeNode.child ? 24 : d.size || 2,
-            fixed : true,
+            x: x,
+            y: y,
+            id: type + (type == typeNode.child ? _childKey(d) : /*type == typeNode.region ? d :*/ _parentKey(d)),
+            size: type != typeNode.child ? type == typeNode.parent ? setting.sizeParent : 50 : d.size || 2,
+            weight: type != typeNode.child ? 24 : d.size || 2,
+            fixed: true,
             // visible : type == typeNode.region,
-            links : 0,
-            type : type,
-            color : c.toString(),
-            d3color : c,
+            links: 0,
+            type: type,
+            color: c.toString(),
+            d3color: c,
             flashColor: type == typeNode.child ? c.brighter().brighter() : c,
-            ext : ext,
-            parent : type == typeNode.parent ? d.key : null,
-            img : type == typeNode.parent ? d.img : null,
-            nodeValue : d
+            ext: ext,
+            parent: type == typeNode.parent ? d.key : null,
+            img: type == typeNode.parent ? d.img : null,
+            nodeValue: d
         }
     }
 
@@ -503,7 +455,7 @@ var ONE_SECOND = 1000,
 
         if (data) {
             i = data.length;
-            while(--i > -1) {
+            while (--i > -1) {
                 d = data[i];
                 if (!d) continue;
                 d.nodes = [];
@@ -514,17 +466,6 @@ var ONE_SECOND = 1000,
                 d.parentNode = n;
                 !n.inserted && (n.inserted = ns.push(n));
 
-                // if (!d.parent.borrowed && !n.region) {
-                //     if (!parentHash.has("suppliers"))
-                //         parentHash.set("suppliers", node("suppliers", typeNode.region));
-                //     n.region = parentHash.get("suppliers");
-                // }
-                // else {
-                //     if (!parentHash.has(d.Region))
-                //         parentHash.set(d.Region, node(d.Region, typeNode.region));
-                //     n.region = parentHash.get(d.Region);
-                // }
-
                 n = getChild(d);
                 console.log('3', n);
                 d.nodes.push(n);
@@ -533,9 +474,11 @@ var ONE_SECOND = 1000,
                 n.ext.values['_' + d.id] = +d;
                 !n.inserted && (n.inserted = ns.push(n));
 
-                j = extHash.values().reduce((function(id) { return function(a, b) {
-                    return (a || 0) + (b.currents[id] || 0);
-                }})(shortTimeFormat(d.date)), null);
+                j = extHash.values().reduce((function (id) {
+                    return function (a, b) {
+                        return (a || 0) + (b.currents[id] || 0);
+                    }
+                })(shortTimeFormat(d.date)), null);
 
                 extMax = j > extMax ? j : extMax;
             }
@@ -544,6 +487,7 @@ var ONE_SECOND = 1000,
     }
 
     var tempFileCanvas;
+
     function colorize(img, r, g, b, a) {
         if (!img)
             return img;
@@ -564,7 +508,7 @@ var ONE_SECOND = 1000,
         imgData = imgCtx.getImageData(0, 0, img.width, img.height);
 
         i = imgData.data.length;
-        while((i -= 4) > -1) {
+        while ((i -= 4) > -1) {
             imgData.data[i + 3] = imgData.data[i] * a;
             if (imgData.data[i + 3]) {
                 imgData.data[i] = r;
@@ -607,8 +551,8 @@ var ONE_SECOND = 1000,
     }
 
     function checkVisible(d, offsetx, offsety) {
-        var tx = lastEvent.translate[0]/lastEvent.scale,
-            ty = lastEvent.translate[1]/lastEvent.scale
+        var tx = lastEvent.translate[0] / lastEvent.scale,
+            ty = lastEvent.translate[1] / lastEvent.scale
             ;
 
         offsetx = offsetx || 0;
@@ -620,9 +564,9 @@ var ONE_SECOND = 1000,
 
         return (
             d.x + d.size > -tx + offsetx[0]
-            && d.x - d.size < -tx + offsetx[1] + _w/lastEvent.scale
+            && d.x - d.size < -tx + offsetx[1] + _w / lastEvent.scale
             && d.y + d.size > -ty + offsety[0]
-            && d.y - d.size < -ty + offsety[1] + _h/lastEvent.scale
+            && d.y - d.size < -ty + offsety[1] + _h / lastEvent.scale
         );
     }
 
@@ -647,14 +591,6 @@ var ONE_SECOND = 1000,
         bufCtx.save();
         bufCtx.clearRect(0, 0, _w, _h);
 
-        // if (setting.blendingLighter && bufCtx.globalCompositeOperation == 'source-over') {
-        //     bufCtx.globalCompositeOperation = 'lighter';
-        //     //darker
-        // }
-        // else if (!setting.blendingLighter && bufCtx.globalCompositeOperation == 'lighter') {
-        //     bufCtx.globalCompositeOperation = 'source-over';
-        // }
-
         bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
         bufCtx.scale(lastEvent.scale, lastEvent.scale);
 
@@ -665,133 +601,85 @@ var ONE_SECOND = 1000,
             d, beg,
             c, x, y, s;
 
-        // if (setting.showChild) {
-            n = _force.nodes()
-                .filter(filterVisible)
-                .sort(sortBySize)
-                .sort(sortByOpacity)
-                .sort(sortByColor)
-            ;
 
-            l = n.length;
+        n = _force.nodes()
+            .filter(filterVisible)
+            .sort(sortBySize)
+            .sort(sortByOpacity)
+            .sort(sortByColor)
+        ;
 
-            c = null;
-            i = 100;
-            j = true;
-            beg = false;
+        l = n.length;
 
-            bufCtx.globalAlpha = i * .01;
+        c = null;
+        i = 100;
+        j = true;
+        beg = false;
 
-            while(--l > -1) {
-                d = n[l];
+        bufCtx.globalAlpha = i * .01;
 
-                if (i != curOpacity(d)) {
-                    i = curOpacity(d);
-                    bufCtx.globalAlpha = i * .01;
-                }
+        while (--l > -1) {
+            d = n[l];
 
-                if (!c || compereColor(c, curColor(d))) {
-                    // console.log(c)
-                    c = curColor(d);
-                    j = false;
-                }
-
-                if (!j) {
-                    // if (!setting.showHalo) {
-                    //     if (beg) {
-                    //         bufCtx.closePath();
-                    //         bufCtx.fill();
-                    //         bufCtx.stroke();
-                    //     }
-                    //
-                    //     bufCtx.beginPath();
-                    //     beg = true;
-                    //     bufCtx.strokeStyle = "none";
-                    //     bufCtx.fillStyle = c.toString();
-                    // }
-                    // else
-                        img = colorize(particle, c.r, c.g, c.b, 1);
-                    j = true;
-                }
-
-                x = Math.floor(d.x);
-                y = Math.floor(d.y);
-
-
-                // if (setting.fadingTail) {
-                    //bufCtx.save();
-                    bufCtx.lineCap="round";
-                    //bufCtx.lineJoin="round";
-                    bufCtx.lineWidth = (radius(nr(d)) / 4)  || 1;
-                    bufCtx.fillStyle = "none";
-                    bufCtx.strokeStyle = c.toString();
-
-                    var rs = d.paths.slice(0).reverse(),
-                        lrs = rs.length,
-                        cura = bufCtx.globalAlpha;
-
-                    for (var p in rs) {
-                        if (!rs.hasOwnProperty(p))
-                            continue;
-
-                        bufCtx.beginPath();
-                        if (p < 1)
-                            bufCtx.moveTo(x, y);
-                        else
-                            bufCtx.moveTo(
-                                Math.floor(rs[p - 1].x),
-                                Math.floor(rs[p - 1].y)
-                            );
-                        bufCtx.lineTo(
-                            Math.floor(rs[p].x),
-                            Math.floor(rs[p].y)
-                        );
-                        bufCtx.stroke();
-                        bufCtx.globalAlpha = ((lrs - p)/lrs) * cura;
-                    }
-                    //bufCtx.restore();
-                    bufCtx.globalAlpha = cura;
-                // }
-
-                // if (!setting.fadingTail) {
-                //     bufCtx.save();
-                //     bufCtx.beginPath();
-                //     bufCtx.lineCap="round";
-                //     bufCtx.lineJoin="round";
-                //     bufCtx.strokeStyle = c.toString();
-                //     bufCtx.lineWidth = (radius(nr(d)) / 4)  || 1;
-                //
-                //     var rs = d.paths.slice(0).reverse(),
-                //         lrs = rs.length;
-                //
-                //     bufCtx.moveTo(x, y);
-                //     for (var p in rs) {
-                //         if (!rs.hasOwnProperty(p))
-                //             continue;
-                //
-                //         bufCtx.lineTo(
-                //             Math.floor(rs[p].x),
-                //             Math.floor(rs[p].y)
-                //         );
-                //     }
-                //     //bufCtx.closePath();
-                //     bufCtx.stroke();
-                //     bufCtx.restore();
-                // }
-
-                s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
-                setting.showHalo
-                    ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
-                    : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
-                ;
+            if (i != curOpacity(d)) {
+                i = curOpacity(d);
+                bufCtx.globalAlpha = i * .01;
             }
-            // if (!setting.showHalo && beg) {
-            //     bufCtx.closePath();
-            //     bufCtx.fill();
-            //     bufCtx.stroke();
-            // }
-        // }
-        
+
+            if (!c || compereColor(c, curColor(d))) {
+                // console.log(c)
+                c = curColor(d);
+                j = false;
+            }
+
+            if (!j) {
+                img = colorize(particle, c.r, c.g, c.b, 1);
+                j = true;
+            }
+
+            x = Math.floor(d.x);
+            y = Math.floor(d.y);
+
+            bufCtx.lineCap = "round";
+            //bufCtx.lineJoin="round";
+            bufCtx.lineWidth = (radius(nr(d)) / 4) || 1;
+            bufCtx.fillStyle = "none";
+            bufCtx.strokeStyle = c.toString();
+
+            var rs = d.paths.slice(0).reverse(),
+                lrs = rs.length,
+                cura = bufCtx.globalAlpha;
+
+            for (var p in rs) {
+                if (!rs.hasOwnProperty(p))
+                    continue;
+
+                bufCtx.beginPath();
+                if (p < 1)
+                    bufCtx.moveTo(x, y);
+                else
+                    bufCtx.moveTo(
+                        Math.floor(rs[p - 1].x),
+                        Math.floor(rs[p - 1].y)
+                    );
+                bufCtx.lineTo(
+                    Math.floor(rs[p].x),
+                    Math.floor(rs[p].y)
+                );
+                bufCtx.stroke();
+                bufCtx.globalAlpha = ((lrs - p) / lrs) * cura;
+            }
+            //bufCtx.restore();
+            bufCtx.globalAlpha = cura;
+
+
+            s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
+            setting.showHalo
+                ? bufCtx.drawImage(img, x - s / 2, y - s / 2, s, s)
+                : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
+            ;
+        }
+
         bufCtx.restore();
     }
 
@@ -819,23 +707,17 @@ var ONE_SECOND = 1000,
     function tick() {
         if (_force.nodes()) {
 
-            // if (setting.groupByRegion)
-            //     _forceBase
-            //         .friction(.75)
-            //         .gravity(0)
-            //         .nodes()
-            //         .forEach(clusterParent(0.025));
-            // else
-                _forceBase
-                    .friction(.9)
-                    .gravity(setting.padding * .001);
+
+            _forceBase
+                .friction(.9)
+                .gravity(setting.padding * .001);
 
             _force.nodes()
                 .forEach(cluster(0.025));
 
             _forceBase.nodes(
                 _forceBase.nodes()
-                    .filter(function(d) {
+                    .filter(function (d) {
                         blink(d, !d.links && setting.parentLife > 0);
                         if (d.visible && d.links === 0 && setting.parentLife > 0) {
                             d.flash = 0;
@@ -844,8 +726,6 @@ var ONE_SECOND = 1000,
                         return d.visible;
                     })
             );
-            // if (setting.groupByRegion)
-            //     _forceBase.links(regionLinks);
         }
 
         _forceBase.resume();
@@ -855,11 +735,11 @@ var ONE_SECOND = 1000,
     // Move d to be adjacent to the cluster node.
     function cluster(alpha) {
 
-        parentHash.forEach(function(k, d) {
+        parentHash.forEach(function (k, d) {
             d.links = 0;
         });
 
-        return function(d) {
+        return function (d) {
             blink(d, setting.childLife > 0);
             if (!d.parent || !d.visible)
                 return;
@@ -886,15 +766,15 @@ var ONE_SECOND = 1000,
                 d.y -= y;
             }
             d.paths && (d.flash/* || d.paths.length > 2*/) && d.paths.push({
-                x : d.x,
-                y : d.y
+                x: d.x,
+                y: d.y
             });
         };
     }
 
     function clusterParent(alpha) {
 
-        return function(d) {
+        return function (d) {
             if (!d.region || !d.visible)
                 return;
 
@@ -951,9 +831,6 @@ var ONE_SECOND = 1000,
                     shortTimeFormat(d.nodeValue.date),
                     "</b>" +
                     "<br/>" +
-                    // "Region: <b>",
-                    // d.nodeValue.Region,
-                    // "</b><br/>" +
                     "Supplier: <b>",
                     d.nodeValue.supplier.name,
                     "</b><br/>" +
@@ -1021,13 +898,15 @@ var ONE_SECOND = 1000,
         valid = false;
     }
 
-    vis.runShow = function(data, dom, w, h, asetting) {
+    vis.runShow = function (data, dom, w, h, asetting) {
         // console.log(data, dom, w, h, asetting);
 
         if (typeof _worker !== "undefined")
             clearTimeout(_worker);
 
-        _data = data.sort(function(a, b) { return d3.ascending(a, b) });
+        _data = data.sort(function (a, b) {
+            return d3.ascending(a, b)
+        });
         _w = w;
         _h = h;
 
@@ -1037,10 +916,14 @@ var ONE_SECOND = 1000,
         setting = asetting;
 
         extColor = d3.scale.category20();
-        _parentKey = function(d) { return d.key; };
-        _childKey = function(d) { return d.id; };
+        _parentKey = function (d) {
+            return d.key;
+        };
+        _childKey = function (d) {
+            return d.id;
+        };
 
-        dateRange = d3.extent(data, function(d) {
+        dateRange = d3.extent(data, function (d) {
             return d.date;
         });
 
@@ -1049,7 +932,7 @@ var ONE_SECOND = 1000,
 
         lastEvent = {
             translate: [0, 0],
-            scale : 1
+            scale: 1
         };
 
         xW = d3.scale.linear()
@@ -1128,10 +1011,9 @@ var ONE_SECOND = 1000,
         _forceBase = (_forceBase || d3.layout.force()
             .stop()
             .size([w, h])
-            //.linkDistance(setting.padding)
             .gravity(setting.padding * .001)
-            .charge(function(d) {
-                return /*setting.groupByRegion ? -(Math.pow(d.size, 2) + setting.padding * (d.links || 1)) :*/ -(setting.padding + d.size) * 8;
+            .charge(function (d) {
+                return -(setting.padding + d.size) * 8;
             }))
             .nodes([])
         ;
@@ -1140,5 +1022,5 @@ var ONE_SECOND = 1000,
         _force.start();
         _forceBase.start();
     };
-    
+
 })(vis || (vis = {}));
