@@ -35,26 +35,24 @@ var vis = {},
     ;
 
 var setting = {
-    childLife : 1 // number of steps of life a child
-    , parentLife : 1 // number of steps of life a parent
+    childLife : 5 // number of steps of life a child
+    , parentLife : 0 // number of steps of life a parent
     // , showCountExt : false // show table of child's extension
     // , onlyShownExt : true // show only extension which is shown
     // , showHistogram : false // displaying histogram of changed files
     , showHalo : true // show a child's halo
-    , padding : 0 // padding around a parent
+    , padding : 5 // padding around a parent
     , rateOpacity : .5 // rate of decrease of opacity
     , rateFlash : 2.5 // rate of decrease of flash
     // , sizeChild : 2 // size of child
-    , sizeParent : 5 // size of parent
-    , showPaddingCircle : false // show circle of padding
-    , useImage : false // show base's image
-    , showChild : true // show a child
-    , skipEmptyDate : true // skip empty date
-    , blendingLighter : false
-    , showTrack : true // show tracks
-    // , showEdge : false // show an edge
-    , groupByRegion : false
-    , fadingTail : true
+    , sizeParent : 0 // size of parent
+    // , showPaddingCircle : false // show circle of padding
+    // , useImage : false // show base's image
+    // , showChild : true // show a child
+    // , skipEmptyDate : true // skip empty date
+    // , blendingLighter : true
+    // , groupByRegion : true
+    // , fadingTail : true
 };
 
 var asyncForEach = function(items, fn, time) {
@@ -65,13 +63,13 @@ var asyncForEach = function(items, fn, time) {
     var workArr = items.reverse().concat();
 
     function loop() {
+        // console.log('loop2');
         if (workArr.length > 0)
             fn(workArr.shift(), workArr);
         if (workArr.length > 0){
             clearTimeout(timeout);
             timeout = setTimeout(loop, time || 1);
         }
-
     }
     loop();
 };
@@ -84,7 +82,7 @@ var shortTimeFormat = (function() {
 })();
 
 var ONE_SECOND = 1000,
-    stepDate = 24 * 60 * 60 * 1000
+    stepDate = 1 * 24 * 60 * 60 * 1000
     ;
 
 (function(vis) {
@@ -142,8 +140,8 @@ var ONE_SECOND = 1000,
 
     var typeNode = {
         parent : 0,
-        child : 1,
-        region : 2
+        child : 1
+        // region : 2
     };
 
     defImg = new Image();
@@ -154,7 +152,7 @@ var ONE_SECOND = 1000,
 
 
     function reCalc(d) {
-        
+        // console.log(d.type)
         var l = d.nodes.length,
             n, a, fn;
 
@@ -256,18 +254,18 @@ var ONE_SECOND = 1000,
             })//.sort(sortBySize)
         ).start();
 
-        _forceBase.nodes(nodes.filter(function(d) {
-            if (d.type == typeNode.region) {
-                d.alive = 1;
-                d.opacity = 100;
-                d.flash = 100;
-            }
-            return (d.type == typeNode.parent || (setting.groupByRegion && d.type == typeNode.region)) && (d.visible || d.opacity);
-        })).start();
+        // _forceBase.nodes(nodes.filter(function(d) {
+        //     if (d.type == typeNode.region) {
+        //         d.alive = 1;
+        //         d.opacity = 100;
+        //         d.flash = 100;
+        //     }
+        //     return (d.type == typeNode.parent || (setting.groupByRegion && d.type == typeNode.region)) && (d.visible || d.opacity);
+        // })).start();
     }
 
     function loop() {
-        // console.log('loop');
+        // console.log('loop1');
 
         var dl, dr;
 
@@ -287,11 +285,10 @@ var ONE_SECOND = 1000,
             }
             return;
         } else {
-            if (!visTurn.length && setting.skipEmptyDate){
-                console.log('recursion loop');
+            if (!visTurn.length /*&& setting.skipEmptyDate*/){
+                // console.log('recursion loop');
                 loop();
             }
-
         }
         
         clearTimeout(_worker);
@@ -318,12 +315,12 @@ var ONE_SECOND = 1000,
         var ext = selectedExt;
 
         if (!ext && selected) {
-            if (selected.type == typeNode.parent) {
-                return d.nodeValue.borrower !== selected.nodeValue
-                && d.nodeValue.supplier !== selected.nodeValue
-                    ? d.flash ? colorlessFlash : colorless
-                    : d.flash ? d.flashColor : d.d3color;
-            }
+            // if (selected.type == typeNode.parent) {
+            //     return d.nodeValue.borrower !== selected.nodeValue
+            //     && d.nodeValue.supplier !== selected.nodeValue
+            //         ? d.flash ? colorlessFlash : colorless
+            //         : d.flash ? d.flashColor : d.d3color;
+            // }
             if (selected.ext)
                 ext = selected.ext;
         }
@@ -333,30 +330,30 @@ var ONE_SECOND = 1000,
             : d.flash ? d.flashColor : d.d3color;
     }
 
-    function curOpacityParent(d) {
-        if (selected && selected.type == typeNode.parent) {
-            return selected != d && !selected.relations[_parentKey(d.nodeValue)]
-                ? 20 : d.opacity;
-        }
-
-        return selected && selected.type == typeNode.child
-        && selected.nodeValue.borrower !== d.nodeValue
-        && selected.nodeValue.supplier !== d.nodeValue
-            ? 20 : d.opacity;
-    }
+    // function curOpacityParent(d) {
+    //     if (selected && selected.type == typeNode.parent) {
+    //         return selected != d && !selected.relations[_parentKey(d.nodeValue)]
+    //             ? 20 : d.opacity;
+    //     }
+    //
+    //     return selected && selected.type == typeNode.child
+    //     && selected.nodeValue.borrower !== d.nodeValue
+    //     && selected.nodeValue.supplier !== d.nodeValue
+    //         ? 20 : d.opacity;
+    // }
 
     function curOpacity(d) {
-        if (d.type == typeNode.parent)
-            return curOpacityParent(d);
+        // if (d.type == typeNode.parent)
+        //     return curOpacityParent(d);
 
         var ext = selectedExt;
 
         if (!ext && selected) {
-            if (selected.type == typeNode.parent) {
-                return d.nodeValue.borrower !== selected.nodeValue
-                && d.nodeValue.supplier !== selected.nodeValue
-                    ? 20 : d.opacity;
-            }
+            // if (selected.type == typeNode.parent) {
+            //     return d.nodeValue.borrower !== selected.nodeValue
+            //     && d.nodeValue.supplier !== selected.nodeValue
+            //         ? 20 : d.opacity;
+            // }
             if (selected.ext)
                 ext = selected.ext;
         }
@@ -378,8 +375,7 @@ var ONE_SECOND = 1000,
             py = (lastEvent.translate[1] - pos[1]) / lastEvent.scale,
             r = Math.sqrt( Math.pow( d.x + px , 2) +
                 Math.pow( d.y + py , 2 ) );
-
-        return r < (d.type == typeNode.parent ? nr(d) * 1.5 : radius(nr(d)));
+        return r < (/*d.type == typeNode.parent ? nr(d) * 1.5 : */radius(nr(d)));
     }
 
     function getNodeFromPos(pos) {
@@ -392,6 +388,7 @@ var ONE_SECOND = 1000,
     }
 
     function node(d, type) {
+        // console.log(d, type)
         var c = type == typeNode.child ? d[cat] : baseColor(d.key),
             ext, x, y,
             w2 = _w/2,
@@ -418,7 +415,7 @@ var ONE_SECOND = 1000,
         x = _w * Math.random();
         y = _h * Math.random();
 
-        if (type == typeNode.parent || type == typeNode.region) {
+        if (type == typeNode.parent /*|| type == typeNode.region*/) {
             if (randomTrue()) {
                 x = x > w5 && x < w2
                     ? x / 5
@@ -448,11 +445,11 @@ var ONE_SECOND = 1000,
         return {
             x : x,
             y : y,
-            id : type + (type == typeNode.child ? _childKey(d) : type == typeNode.region ? d : _parentKey(d)),
+            id : type + (type == typeNode.child ? _childKey(d) : /*type == typeNode.region ? d :*/ _parentKey(d)),
             size : type != typeNode.child ? type == typeNode.parent ? setting.sizeParent : 50 : d.size || 2,
             weight : type != typeNode.child ? 24 : d.size || 2,
             fixed : true,
-            visible : type == typeNode.region,
+            // visible : type == typeNode.region,
             links : 0,
             type : type,
             color : c.toString(),
@@ -511,22 +508,25 @@ var ONE_SECOND = 1000,
                 if (!d) continue;
                 d.nodes = [];
 
+                console.log('1', d);
                 n = getBase(d);
+                console.log('2', n);
                 d.parentNode = n;
                 !n.inserted && (n.inserted = ns.push(n));
 
-                if (!d.parent.borrowed && !n.region) {
-                    if (!parentHash.has("suppliers"))
-                        parentHash.set("suppliers", node("suppliers", typeNode.region));
-                    n.region = parentHash.get("suppliers");
-                }
-                else {
-                    if (!parentHash.has(d.Region))
-                        parentHash.set(d.Region, node(d.Region, typeNode.region));
-                    n.region = parentHash.get(d.Region);
-                }
+                // if (!d.parent.borrowed && !n.region) {
+                //     if (!parentHash.has("suppliers"))
+                //         parentHash.set("suppliers", node("suppliers", typeNode.region));
+                //     n.region = parentHash.get("suppliers");
+                // }
+                // else {
+                //     if (!parentHash.has(d.Region))
+                //         parentHash.set(d.Region, node(d.Region, typeNode.region));
+                //     n.region = parentHash.get(d.Region);
+                // }
 
                 n = getChild(d);
+                console.log('3', n);
                 d.nodes.push(n);
                 n.ext.currents[shortTimeFormat(d.date)] = (n.ext.currents[shortTimeFormat(d.date)] || 0);
                 n.ext.currents[shortTimeFormat(d.date)]++;
@@ -647,13 +647,13 @@ var ONE_SECOND = 1000,
         bufCtx.save();
         bufCtx.clearRect(0, 0, _w, _h);
 
-        if (setting.blendingLighter && bufCtx.globalCompositeOperation == 'source-over') {
-            bufCtx.globalCompositeOperation = 'lighter';
-            //darker
-        }
-        else if (!setting.blendingLighter && bufCtx.globalCompositeOperation == 'lighter') {
-            bufCtx.globalCompositeOperation = 'source-over';
-        }
+        // if (setting.blendingLighter && bufCtx.globalCompositeOperation == 'source-over') {
+        //     bufCtx.globalCompositeOperation = 'lighter';
+        //     //darker
+        // }
+        // else if (!setting.blendingLighter && bufCtx.globalCompositeOperation == 'lighter') {
+        //     bufCtx.globalCompositeOperation = 'source-over';
+        // }
 
         bufCtx.translate(lastEvent.translate[0], lastEvent.translate[1]);
         bufCtx.scale(lastEvent.scale, lastEvent.scale);
@@ -665,7 +665,7 @@ var ONE_SECOND = 1000,
             d, beg,
             c, x, y, s;
 
-        if (setting.showChild) {
+        // if (setting.showChild) {
             n = _force.nodes()
                 .filter(filterVisible)
                 .sort(sortBySize)
@@ -691,24 +691,25 @@ var ONE_SECOND = 1000,
                 }
 
                 if (!c || compereColor(c, curColor(d))) {
+                    // console.log(c)
                     c = curColor(d);
                     j = false;
                 }
 
                 if (!j) {
-                    if (!setting.showHalo) {
-                        // if (beg) {
-                        //     bufCtx.closePath();
-                        //     bufCtx.fill();
-                        //     bufCtx.stroke();
-                        // }
-
-                        // bufCtx.beginPath();
-                        // beg = true;
-                        bufCtx.strokeStyle = "none";
-                        bufCtx.fillStyle = c.toString();
-                    }
-                    else
+                    // if (!setting.showHalo) {
+                    //     if (beg) {
+                    //         bufCtx.closePath();
+                    //         bufCtx.fill();
+                    //         bufCtx.stroke();
+                    //     }
+                    //
+                    //     bufCtx.beginPath();
+                    //     beg = true;
+                    //     bufCtx.strokeStyle = "none";
+                    //     bufCtx.fillStyle = c.toString();
+                    // }
+                    // else
                         img = colorize(particle, c.r, c.g, c.b, 1);
                     j = true;
                 }
@@ -717,7 +718,7 @@ var ONE_SECOND = 1000,
                 y = Math.floor(d.y);
 
 
-                if (setting.fadingTail && setting.showTrack) {
+                // if (setting.fadingTail) {
                     //bufCtx.save();
                     bufCtx.lineCap="round";
                     //bufCtx.lineJoin="round";
@@ -750,33 +751,33 @@ var ONE_SECOND = 1000,
                     }
                     //bufCtx.restore();
                     bufCtx.globalAlpha = cura;
-                }
+                // }
 
-                if (!setting.fadingTail && setting.showTrack) {
-                    bufCtx.save();
-                    bufCtx.beginPath();
-                    bufCtx.lineCap="round";
-                    bufCtx.lineJoin="round";
-                    bufCtx.strokeStyle = c.toString();
-                    bufCtx.lineWidth = (radius(nr(d)) / 4)  || 1;
-
-                    var rs = d.paths.slice(0).reverse(),
-                        lrs = rs.length;
-
-                    bufCtx.moveTo(x, y);
-                    for (var p in rs) {
-                        if (!rs.hasOwnProperty(p))
-                            continue;
-
-                        bufCtx.lineTo(
-                            Math.floor(rs[p].x),
-                            Math.floor(rs[p].y)
-                        );
-                    }
-                    //bufCtx.closePath();
-                    bufCtx.stroke();
-                    bufCtx.restore();
-                }
+                // if (!setting.fadingTail) {
+                //     bufCtx.save();
+                //     bufCtx.beginPath();
+                //     bufCtx.lineCap="round";
+                //     bufCtx.lineJoin="round";
+                //     bufCtx.strokeStyle = c.toString();
+                //     bufCtx.lineWidth = (radius(nr(d)) / 4)  || 1;
+                //
+                //     var rs = d.paths.slice(0).reverse(),
+                //         lrs = rs.length;
+                //
+                //     bufCtx.moveTo(x, y);
+                //     for (var p in rs) {
+                //         if (!rs.hasOwnProperty(p))
+                //             continue;
+                //
+                //         bufCtx.lineTo(
+                //             Math.floor(rs[p].x),
+                //             Math.floor(rs[p].y)
+                //         );
+                //     }
+                //     //bufCtx.closePath();
+                //     bufCtx.stroke();
+                //     bufCtx.restore();
+                // }
 
                 s = radius(nr(d)) * (setting.showHalo ? 8 : 1);
                 setting.showHalo
@@ -784,12 +785,12 @@ var ONE_SECOND = 1000,
                     : bufCtx.arc(x, y, s, 0, PI_CIRCLE, true)
                 ;
             }
-            if (!setting.showHalo && beg) {
-                bufCtx.closePath();
-                bufCtx.fill();
-                bufCtx.stroke();
-            }
-        }
+            // if (!setting.showHalo && beg) {
+            //     bufCtx.closePath();
+            //     bufCtx.fill();
+            //     bufCtx.stroke();
+            // }
+        // }
         
         bufCtx.restore();
     }
@@ -818,13 +819,13 @@ var ONE_SECOND = 1000,
     function tick() {
         if (_force.nodes()) {
 
-            if (setting.groupByRegion)
-                _forceBase
-                    .friction(.75)
-                    .gravity(0)
-                    .nodes()
-                    .forEach(clusterParent(0.025));
-            else
+            // if (setting.groupByRegion)
+            //     _forceBase
+            //         .friction(.75)
+            //         .gravity(0)
+            //         .nodes()
+            //         .forEach(clusterParent(0.025));
+            // else
                 _forceBase
                     .friction(.9)
                     .gravity(setting.padding * .001);
@@ -843,8 +844,8 @@ var ONE_SECOND = 1000,
                         return d.visible;
                     })
             );
-            if (setting.groupByRegion)
-                _forceBase.links(regionLinks);
+            // if (setting.groupByRegion)
+            //     _forceBase.links(regionLinks);
         }
 
         _forceBase.resume();
@@ -931,7 +932,7 @@ var ONE_SECOND = 1000,
         }
         if (tooltip.style("display") == "none") {
             res = [];
-
+// console.log(d)
             if (d.type == typeNode.parent) {
                 res = [
                     d.img && d.img.width > 0 && d.img.height > 0 ? d.img.outerHTML : "",
@@ -949,10 +950,10 @@ var ONE_SECOND = 1000,
                     "Date: <b>",
                     shortTimeFormat(d.nodeValue.date),
                     "</b>" +
-                    "<hr/>" +
-                    "Region: <b>",
-                    d.nodeValue.Region,
-                    "</b><br/>" +
+                    "<br/>" +
+                    // "Region: <b>",
+                    // d.nodeValue.Region,
+                    // "</b><br/>" +
                     "Supplier: <b>",
                     d.nodeValue.supplier.name,
                     "</b><br/>" +
@@ -1130,7 +1131,7 @@ var ONE_SECOND = 1000,
             //.linkDistance(setting.padding)
             .gravity(setting.padding * .001)
             .charge(function(d) {
-                return setting.groupByRegion ? -(Math.pow(d.size, 2) + setting.padding * (d.links || 1)) : -(setting.padding + d.size) * 8;
+                return /*setting.groupByRegion ? -(Math.pow(d.size, 2) + setting.padding * (d.links || 1)) :*/ -(setting.padding + d.size) * 8;
             }))
             .nodes([])
         ;

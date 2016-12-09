@@ -11,7 +11,7 @@
         .range([4, 400]);
 
     var projection = d3.geo.mercator() // сферическая проекция Меркатора.
-        .scale(w/6.5)
+        .scale(w/3) // 6.5
         .translate([w / 2, h / 1.6]);
 
     var path = d3.geo.path()   // создать новый генератор географический путь
@@ -175,6 +175,6 @@
             .attr("class", "feature")
             .attr("d", path);
 
-        d3.csv('request/2013.csv', request);
+        d3.csv('request/2014.csv', request);
     });
 })();
