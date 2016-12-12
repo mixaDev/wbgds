@@ -7,8 +7,8 @@
             .append("div")
             .attr("id", "c");
 
-    var sizes = d3.scale.linear() //  построить линейную шкалу количественного.
-        .range([4, 400]);
+    // var sizes = d3.scale.linear() //  построить линейную шкалу количественного.
+    //     .range([4, 400]);
 
     var projection = d3.geo.mercator() // сферическая проекция Меркатора.
         .scale(w/3) // 6.5
@@ -78,23 +78,13 @@
         }
     }
 
-    function initItemCounty(key, value) {
+    function initItemCounty(key) {
         var cc = wbc.getByIsoId(key);
         var coordinates = coord(cc.longitude, cc.latitude);
 
         var c = {
             key: key,
-            name: value,
-            shortName: value.split(',')[0],
-            borrowed : 0,
-            supplied : 0,
-            toString : function(full) {
-                return full ? this.name : this.shortName;
-            },
-            capitalCity: {
-                name : cc.capitalCity,
-                coord : coordinates
-            },
+            name: cc.name,
             x: coordinates.x,
             y: coordinates.y
         };
@@ -105,11 +95,9 @@
     }
 
     function initItem(d) {
-        d.value = d.basevalue = parseInt(d["Total Contract Amount (USD)"].substring(1));
-        d.borrower = initItemCounty(d["Borrower Country Code"], d["Borrower Country"]);
-        d.borrower.borrowed += d.value;
-        d.supplier = initItemCounty(d["Supplier Country Code"], d["Supplier Country"]);
-        d.supplier.supplied += d.value;
+        d.amount = parseInt(d["Total Contract Amount (USD)"].substring(1));
+        d.borrower = initItemCounty(d["Borrower Country Code"]);
+        d.supplier = initItemCounty(d["Supplier Country Code"]);
         d.id = d['WB Contract Number'] + d.supplier.key + d.borrower.key;
         d.date = Date.parse(d['Contract Signing Date']);
 
@@ -142,11 +130,11 @@
             .filter(function(i){ return wbc.getByIsoId(i['Borrower Country Code']) && wbc.getByIsoId(i['Supplier Country Code'])})
             .map(initItem);
         l = data.length;
-        sizes.domain(d3.extent(data));
+        // sizes.domain(d3.extent(data));
 
         while(--l > -1) {
             a = data[l];
-            a.size = sizes(+a);
+            // a.size = sizes(+a);
             b = clone(a);
             a.parent = a.supplier;
             b.parent = b.borrower;
@@ -160,8 +148,6 @@
             .data(wbc[1])
             .enter()
             .append("circle")
-            .attr("r", 1)
-            .attr("fill", "#fff")
             .attr("transform", ctr);
 
         vis.runShow(_data, div, w, h, setting);
@@ -175,6 +161,6 @@
             .attr("class", "feature")
             .attr("d", path);
 
-        d3.csv('request/2014.csv', request);
+        d3.csv('request/2013.csv', request);
     });
 })();

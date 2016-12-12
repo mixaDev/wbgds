@@ -20,16 +20,21 @@ body > div {
   z-index: 0;
   width: 100%;
   height: 100%;
-}
 
-#map svg {
-  width: 100%;
-  height: 100%;
-}
+  svg {
+    width: 100%;
+    height: 100%;
+  }
 
-#map .feature {
-  fill: #2C2C43;
-  stroke: #4A4A70;
+  .feature {
+    fill: #2C2C43;
+    stroke: #4A4A70;
+  }
+
+  circle {
+    fill: #fff;
+    r: 1
+  }
 }
 
 #c {
@@ -42,6 +47,13 @@ body > div {
   left: 0;
   top: 0;
   z-index: 2;
+
+  rect {
+    fill: #fff;
+    fill-opacity: 0;
+    x: 0;
+    y: 0;
+  }
 }
 
 .gtLeg, .gttLeg {

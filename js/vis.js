@@ -30,18 +30,14 @@
         };
 })(window);
 
-var vis = {},
-    cat = 'Major Sector'
-    ;
+var vis = {};
 
 var setting = {
-    childLife: 5 // number of steps of life a child
-    , parentLife: 0 // number of steps of life a parent
-    , showHalo: true // show a child's halo
+    childLife: 0 // number of steps of life a child
+    , showHalo: false // show a child's halo
     , padding: 5 // padding around a parent
     , rateOpacity: .5 // rate of decrease of opacity
     , rateFlash: 2.5 // rate of decrease of flash
-    , sizeParent: 0 // size of parent
 };
 
 var asyncForEach = function (items, fn, time) {
@@ -72,8 +68,7 @@ var shortTimeFormat = (function () {
 })();
 
 var ONE_SECOND = 1000,
-    stepDate = 1 * 24 * 60 * 60 * 1000
-    ;
+    stepDate = 24 * 60 * 60 * 1000;
 
 (function (vis) {
 
@@ -89,19 +84,9 @@ var ONE_SECOND = 1000,
         colorless = d3.rgb("gray"),
         colorlessFlash = d3.rgb("lightgray"),
 
-        parentHash,
         childHash,
-        extHash,
-        extMax,
-
-        _parentKey,
-        _childKey,
 
         _force,
-        _forceBase,
-
-        links,
-        regionLinks,
 
         canvas, ctx,
         bufCanvas, bufCtx,
@@ -110,131 +95,64 @@ var ONE_SECOND = 1000,
         valid,
 
         particle,
-        defImg,
 
         lastEvent,
-        zoomScale,
         _w, _h,
-        xW,
-        yH,
 
         setting,
         rd3 = d3.random.irwinHall(8)
         ;
 
     var extColor = d3.scale.category20(),
-        baseColor = d3.scale.category20b()
-        ;
-
-    var th = d3.format(",");
+        baseColor = d3.scale.category20b();
 
     var typeNode = {
         parent: 0,
         child: 1
     };
 
-    defImg = new Image();
-    defImg.src = "img/def.png";
-
     particle = new Image();
     particle.src = "img/particle.png";
 
 
     function reCalc(d) {
-        // console.log(d.type)
+        // console.log(d)
         var l = d.nodes.length,
-            n, a, fn;
-
+            n, a;
+        // console.log(d.parentNode)
         a = d.parentNode;
-        a.relations = a.relations || {};
         a.fixed = a.x instanceof Object || a.y instanceof Object ? true : false;
-
-        if (!l)
-            console.log(d);
-        else {
-            a.alive = setting.parentLife > 0 ? setting.parentLife : 1;
-            a.opacity = 100;
-            a.flash = 100;
-            a.visible = true;
-        }
 
         while (--l > -1) {
             n = d.nodes[l];
 
             if (n.fixed) {
-                //n.x = xW(n.x);
-                //n.y = yH(n.y);
                 n.x = a.x;
                 n.y = a.y;
                 n.paths = [{x: n.x, y: n.y}];
-                n.msize = n.size;
-                n.size *= 3;
-            }
-            else {
-                n.size = n.hasOwnProperty("msize") ? n.msize : n.size;
-                delete n["msize"];
             }
 
-            //n.size += 2;
             n.fixed = false;
 
             n.parent = a;
 
             n.visible = true;
-            fn = _childKey(n.nodeValue);
 
             n.flash = 100;
             n.opacity = 100;
             n.alive = setting.childLife > 0 ? setting.childLife : 1;
 
             if (n.visible) {
-                n.ext.now.indexOf(fn) < 0
-                && n.ext.now.push(fn);
+                n.ext.now.indexOf(n.id) < 0
+                && n.ext.now.push(n.id);
             }
             else {
-                (fn = n.ext.now.indexOf(fn)) > -1
-                && n.ext.now.splice(parseInt(fn), 1);
+                (n.id = n.ext.now.indexOf(n.id)) > -1
+                && n.ext.now.splice(parseInt(n.id), 1);
 
                 n.flash *= .5;
                 n.alive *= .2;
                 n.opacity *= .5;
-            }
-
-            var key = a.id + "_" + n.id,
-                src = a,
-                trg = n,
-                bid = _parentKey(n.nodeValue.borrower),
-                sid = _parentKey(n.nodeValue.supplier)
-
-                ;
-
-            if (a.id != bid && !a.relations.hasOwnProperty(bid)) {
-                a.relations[bid] = n.nodeValue.borrower;
-            } else if (a.id != sid && !a.relations.hasOwnProperty(sid)) {
-                a.relations[sid] = n.nodeValue.supplier;
-            }
-
-            if (n.nodeValue.borrower == a.nodeValue) {
-                key = n.id + "_" + a.id;
-                src = n;
-                trg = a;
-            }
-
-            if (!links.has(key))
-                links.set(key, {
-                    key: key,
-                    source: src,
-                    target: trg
-                });
-
-            if (n.nodeValue.supplier == n.nodeValue.borrower) {
-                key = n.id + "_" + a.id;
-                if (!links.has(key))
-                    links.set(key, {
-                        key: key,
-                        source: trg,
-                        target: src
-                    });
             }
         }
 
@@ -341,7 +259,7 @@ var ONE_SECOND = 1000,
 
     function node(d, type) {
         // console.log(d, type)
-        var c = type == typeNode.child ? d[cat] : baseColor(d.key),
+        var c,
             ext, x, y,
             w2 = _w / 2,
             w5 = _w / 5,
@@ -349,25 +267,20 @@ var ONE_SECOND = 1000,
             h5 = _h / 5
             ;
         if (type == typeNode.child) {
-            ext = extHash.get(c);
-            if (!ext) {
-                ext = {
-                    all: 0,
-                    currents: {},
-                    values: {},
-                    color: d3.rgb(extColor(c)),
-                    now: []
-                };
-                extHash.set(c, ext);
-            }
-            ext.all++;
+            ext = {
+                currents: {},
+                values: {},
+                color: d3.rgb(extColor(d['Major Sector'])),
+                now: []
+            };
             c = ext.color;
         }
 
         x = _w * Math.random();
         y = _h * Math.random();
 
-        if (type == typeNode.parent /*|| type == typeNode.region*/) {
+        if (type == typeNode.parent) {
+            c = baseColor(d.key)
             if (randomTrue()) {
                 x = x > w5 && x < w2
                     ? x / 5
@@ -375,8 +288,7 @@ var ONE_SECOND = 1000,
                     ? _w - x / 5
                     : x
                 ;
-            }
-            else {
+            } else {
                 y = y > h5 && y < h2
                     ? y / 5
                     : y > h2 && y < _h - h5
@@ -384,22 +296,20 @@ var ONE_SECOND = 1000,
                     : y
                 ;
             }
-            if (type == typeNode.parent) {
-                if (d.hasOwnProperty("x")) {
-                    x = d.x;
-                }
-                if (d.hasOwnProperty("y")) {
-                    y = d.y;
-                }
+            if (d.hasOwnProperty("x")) {
+                x = d.x;
+            }
+            if (d.hasOwnProperty("y")) {
+                y = d.y;
             }
         }
 
-        return {
+        var node = {
             x: x,
             y: y,
-            id: type + (type == typeNode.child ? _childKey(d) : /*type == typeNode.region ? d :*/ _parentKey(d)),
-            size: type != typeNode.child ? type == typeNode.parent ? setting.sizeParent : 50 : d.size || 2,
-            weight: type != typeNode.child ? 24 : d.size || 2,
+            id: type == typeNode.child ? d.id : d.key,
+            size: 2,
+            weight: 2,
             fixed: true,
             // visible : type == typeNode.region,
             links: 0,
@@ -408,51 +318,41 @@ var ONE_SECOND = 1000,
             d3color: c,
             flashColor: type == typeNode.child ? c.brighter().brighter() : c,
             ext: ext,
-            parent: type == typeNode.parent ? d.key : null,
-            img: type == typeNode.parent ? d.img : null,
             nodeValue: d
-        }
+        };
+        // console.log(node)
+        return node;
     }
 
     function getBase(d) {
         if (!d || !d.parent)
             return null;
 
-        var pkey = _parentKey(d.parent);
-
-        var n = parentHash.get(pkey);
-
-        if (!n) {
-            n = node(d.parent, typeNode.parent);
-            parentHash.set(pkey, n);
-        }
-        return n;
+        return node(d.parent, typeNode.parent);
     }
 
     function getChild(d) {
         if (!d)
             return null;
 
-        var key = _childKey(d);
-
-        var n = childHash.get(key);
+        var n = childHash.get(d.id);
 
         if (!n) {
             n = node(d, typeNode.child);
             n.links = 1;
-            childHash.set(key, n);
+            childHash.set(d.id, n);
         }
         return n;
     }
 
     function initNodes(data) {
         var ns = [],
-            i, j, n, d, df;
-        parentHash = d3.map({});
-        childHash = d3.map({});
-        extHash = d3.map({});
-        extMax = 0;
+            i,
+            n, d, df;
 
+        childHash = d3.map({});
+
+        console.log(data)
         if (data) {
             i = data.length;
             while (--i > -1) {
@@ -460,29 +360,15 @@ var ONE_SECOND = 1000,
                 if (!d) continue;
                 d.nodes = [];
 
-                console.log('1', d);
                 n = getBase(d);
-                console.log('2', n);
                 d.parentNode = n;
-                !n.inserted && (n.inserted = ns.push(n));
 
                 n = getChild(d);
-                console.log('3', n);
                 d.nodes.push(n);
-                n.ext.currents[shortTimeFormat(d.date)] = (n.ext.currents[shortTimeFormat(d.date)] || 0);
-                n.ext.currents[shortTimeFormat(d.date)]++;
-                n.ext.values['_' + d.id] = +d;
                 !n.inserted && (n.inserted = ns.push(n));
-
-                j = extHash.values().reduce((function (id) {
-                    return function (a, b) {
-                        return (a || 0) + (b.currents[id] || 0);
-                    }
-                })(shortTimeFormat(d.date)), null);
-
-                extMax = j > extMax ? j : extMax;
             }
         }
+        console.log(ns)
         return ns;
     }
 
@@ -546,44 +432,8 @@ var ONE_SECOND = 1000,
         }
     }
 
-    function sortBySize(a, b) {
-        return d3.ascending(a.size, b.size);
-    }
-
-    function checkVisible(d, offsetx, offsety) {
-        var tx = lastEvent.translate[0] / lastEvent.scale,
-            ty = lastEvent.translate[1] / lastEvent.scale
-            ;
-
-        offsetx = offsetx || 0;
-        if (!(offsetx instanceof Array))
-            offsetx = [offsetx, offsetx];
-        offsety = offsety || 0;
-        if (!(offsety instanceof Array))
-            offsety = [offsety, offsety];
-
-        return (
-            d.x + d.size > -tx + offsetx[0]
-            && d.x - d.size < -tx + offsetx[1] + _w / lastEvent.scale
-            && d.y + d.size > -ty + offsety[0]
-            && d.y - d.size < -ty + offsety[1] + _h / lastEvent.scale
-        );
-    }
-
-    function sortByColor(a, b) {
-        return d3.ascending(b.color + !b.flash, a.color + !a.flash);
-    }
-
-    function sortByOpacity(a, b) {
-        return d3.ascending(curOpacity(b), curOpacity(a));
-    }
-
     function compereColor(a, b) {
         return a.r != b.r || a.g != b.g || a.b != b.b;
-    }
-
-    function filterVisible(d) {
-        return checkVisible(d) && (d.visible || d.alive);
     }
 
     function redrawCanvas() {
@@ -603,10 +453,6 @@ var ONE_SECOND = 1000,
 
 
         n = _force.nodes()
-            .filter(filterVisible)
-            .sort(sortBySize)
-            .sort(sortByOpacity)
-            .sort(sortByColor)
         ;
 
         l = n.length;
@@ -707,37 +553,15 @@ var ONE_SECOND = 1000,
     function tick() {
         if (_force.nodes()) {
 
-
-            _forceBase
-                .friction(.9)
-                .gravity(setting.padding * .001);
-
             _force.nodes()
                 .forEach(cluster(0.025));
-
-            _forceBase.nodes(
-                _forceBase.nodes()
-                    .filter(function (d) {
-                        blink(d, !d.links && setting.parentLife > 0);
-                        if (d.visible && d.links === 0 && setting.parentLife > 0) {
-                            d.flash = 0;
-                            d.alive = d.alive / 10;
-                        }
-                        return d.visible;
-                    })
-            );
         }
-
-        _forceBase.resume();
+        
         _force.resume();
     }
 
     // Move d to be adjacent to the cluster node.
     function cluster(alpha) {
-
-        parentHash.forEach(function (k, d) {
-            d.links = 0;
-        });
 
         return function (d) {
             blink(d, setting.childLife > 0);
@@ -772,36 +596,6 @@ var ONE_SECOND = 1000,
         };
     }
 
-    function clusterParent(alpha) {
-
-        return function (d) {
-            if (!d.region || !d.visible)
-                return;
-
-            var node = d.region,
-                l,
-                r,
-                x,
-                y;
-
-            if (node == d) return;
-            node.links++;
-
-            x = d.x - node.x;
-            y = d.y - node.y;
-            l = Math.sqrt(x * x + y * y);
-            r = nr(d) + (nr(node) + setting.padding * 2);
-            if (l != r) {
-                l = (l - r) / (l || 1) * (alpha || 1);
-                x *= l;
-                y *= l;
-
-                d.x -= x;
-                d.y -= y;
-            }
-        };
-    }
-
     var tooltip;
 
     function showToolTip(d) {
@@ -811,37 +605,26 @@ var ONE_SECOND = 1000,
             return;
         }
         if (tooltip.style("display") == "none") {
-            res = [];
-// console.log(d)
-            if (d.type == typeNode.parent) {
-                res = [
-                    d.img && d.img.width > 0 && d.img.height > 0 ? d.img.outerHTML : "",
-                    " Country: <b>",
-                    d.nodeValue.shortName,
-                    "</b><hr/>Supplied ($): <b>",
-                    th(d.nodeValue.supplied),
-                    "M.</b><br/>Borrowed ($): <b>",
-                    th(d.nodeValue.borrowed),
-                    "M.</b><br/>"
-                ];
-            }
-            else {
-                res = [
-                    "Date: <b>",
-                    shortTimeFormat(d.nodeValue.date),
-                    "</b>" +
-                    "<br/>" +
-                    "Supplier: <b>",
-                    d.nodeValue.supplier.name,
-                    "</b><br/>" +
-                    "Borrower: <b>",
-                    d.nodeValue.borrower.name,
-                    "</b><br/>" +
-                    "Borrowed ($): <b>",
-                    th(+d.nodeValue),
-                    "M.</b><br/>"
-                ];
-            }
+            res = [
+                "Date: <b>",
+                shortTimeFormat(d.nodeValue.date),
+                "</b>",
+                "<br/>",
+                "Supplier: ",
+                d.nodeValue.supplier.img && d.nodeValue.supplier.img.width > 0 && d.nodeValue.supplier.img.height > 0 ? d.nodeValue.supplier.img.outerHTML : "",
+                "<b>",
+                d.nodeValue.supplier.name,
+                "</b><br/>",
+                "Borrower: ",
+                d.nodeValue.borrower.img && d.nodeValue.borrower.img.width > 0 && d.nodeValue.borrower.img.height > 0 ? d.nodeValue.borrower.img.outerHTML : "",
+                "<b>",
+                d.nodeValue.borrower.name,
+                "</b><br/>",
+                "Amount: ",
+                "<b>",
+                d.nodeValue.amount,
+                "</b><br/>"
+            ];
 
             tooltip.html(res.join(''));
             tooltip.style("display", "block");
@@ -883,21 +666,6 @@ var ONE_SECOND = 1000,
         moveToolTip(d, d3.event);
     }
 
-    function move() {
-        lastEvent.translate = d3.event.translate.slice(0);
-        lastEvent.scale = d3.event.scale;
-
-        var tl = lastEvent.translate[0] / lastEvent.scale,
-            tt = lastEvent.translate[1] / lastEvent.scale;
-
-        xW.range([-tl, -tl + _w / lastEvent.scale])
-            .domain([0, _w]);
-        yH.range([-tt, -tt + _h / lastEvent.scale])
-            .domain([0, _h]);
-
-        valid = false;
-    }
-
     vis.runShow = function (data, dom, w, h, asetting) {
         // console.log(data, dom, w, h, asetting);
 
@@ -916,12 +684,6 @@ var ONE_SECOND = 1000,
         setting = asetting;
 
         extColor = d3.scale.category20();
-        _parentKey = function (d) {
-            return d.key;
-        };
-        _childKey = function (d) {
-            return d.id;
-        };
 
         dateRange = d3.extent(data, function (d) {
             return d.date;
@@ -935,26 +697,11 @@ var ONE_SECOND = 1000,
             scale: 1
         };
 
-        xW = d3.scale.linear()
-            .range([0, w])
-            .domain([0, w]);
-
-        yH = d3.scale.linear()
-            .range([0, h])
-            .domain([0, h]);
-
-        var zoom = d3.behavior.zoom()
-            .scaleExtent([.1, 8])
-            .scale(1)
-            .translate([0, 0])
-            .on("zoom", move);
-
         canvas = layer.append("canvas")
             .text("This browser don't support element type of Canvas.")
             .attr("id", "mainCanvas")
             .attr("width", w)
             .attr("height", h)
-            .call(zoom)
             .node();
 
         tooltip = tooltip || d3.select(document.body).append("div").attr("class", "tooltip");
@@ -967,29 +714,26 @@ var ONE_SECOND = 1000,
         bufCanvas.height = h;
 
         bufCtx = bufCanvas.getContext("2d");
-        bufCtx.globalCompositeOperation = 'lighter';
+        // bufCtx.globalCompositeOperation = 'lighter';
 
-        bufCtx.font = "normal normal " + setting.sizeParent / 2 + "px Tahoma";
-        bufCtx.textAlign = "center";
+        // bufCtx.font = "normal normal " + setting.sizeParent / 2 + "px Tahoma";
+        // bufCtx.textAlign = "center";
 
         d3.select(dom.node().parentNode).select("#s").remove();
 
-        layer = d3.select(dom.node().parentNode).append("div").attr("id", "s")
-            .append("svg").attr('width', w).attr("height", h);
+        layer = d3.select(dom.node().parentNode)
+            .append("div")
+            .attr("id", "s")
+                .append("svg")
+                .attr('width', w)
+                .attr("height", h)
+                    .append("g")
+                    .call(setting.zoom)
+                    .on('mousemove.tooltip', movem)
+                        .append("rect")
+                        .attr("width", w)
+                        .attr("height", h);
 
-        layer.append("g")
-            .call(setting.zoom ? setting.zoom : zoom)
-            .on('mousemove.tooltip', movem)
-            .append("rect")
-            .attr("width", w)
-            .attr("height", h)
-            .attr("x", 0)
-            .attr("y", 0)
-            .style("fill", "#ffffff")
-            .style("fill-opacity", 0);
-
-        links = d3.map({});
-        regionLinks = [];
         nodes = initNodes(_data);
 
         _force = (_force || d3.layout.force()
@@ -1000,27 +744,10 @@ var ONE_SECOND = 1000,
             //.charge(function(d) {return -1 * radius(nr(d)); } )
             .charge(-.5)
             .on("tick", tick))
-            .nodes([])
-        ;
-
-        zoomScale = d3.scale.linear()
-            .range([5, 1])
-            .domain([.1, 1]);
-
-        setting.padding = setting.padding || 0;
-        _forceBase = (_forceBase || d3.layout.force()
-            .stop()
-            .size([w, h])
-            .gravity(setting.padding * .001)
-            .charge(function (d) {
-                return -(setting.padding + d.size) * 8;
-            }))
-            .nodes([])
-        ;
+            .nodes([]);
 
         run();
         _force.start();
-        _forceBase.start();
     };
 
 })(vis || (vis = {}));
