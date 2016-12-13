@@ -33,33 +33,11 @@
 var vis = {};
 
 var setting = {
-    childLife: 5 // number of steps of life a child
+    childLife: 1 // number of steps of life a child
     , showHalo: true // show a child's halo
     , padding: 5 // padding around a parent
     , rateOpacity: .5 // rate of decrease of opacity
     , rateFlash: 2.5 // rate of decrease of flash
-};
-
-var asyncForEach = function (items, fn, time) {
-    if (!(items instanceof Array))
-        return;
-    var timeout;
-
-    var workArr = items.reverse().concat();
-
-    function loop() {
-        // console.log('loop2');
-        if (workArr.length > 0)
-            fn(workArr.shift(), workArr);
-        if (workArr.length > 0) {
-            clearTimeout(timeout);
-            timeout = setTimeout(function(){
-                loop();
-            }, time || 1);
-        }
-    }
-
-    loop();
 };
 
 var shortTimeFormat = (function () {
@@ -104,16 +82,20 @@ var ONE_SECOND = 1000,
 
         setting,
 
-        body = d3.select("body");
+        body = d3.select("body"),
 
-    var extColor = d3.scale.category20();
+        tempFileCanvas,
+
+        extColor = d3.scale.category20(),
+
+        tooltip;
 
     particle = new Image();
     particle.src = "img/particle.png";
 
 
     function reCalc(d) {
-        // console.log(d)
+        // console.log('reCalc', d);
         var l = d.nodes.length,
             n;
 
@@ -133,25 +115,23 @@ var ONE_SECOND = 1000,
             }
 
             n.fixed = false;
-
             n.visible = true;
-
             n.flash = 100;
             n.opacity = 100;
             n.alive = setting.childLife > 0 ? setting.childLife : 1;
 
-            if (n.visible) {
-                n.ext.now.indexOf(n.id) < 0
-                && n.ext.now.push(n.id);
-            }
-            else {
-                (n.id = n.ext.now.indexOf(n.id)) > -1
-                && n.ext.now.splice(parseInt(n.id), 1);
-
-                n.flash *= .5;
-                n.alive *= .2;
-                n.opacity *= .5;
-            }
+            // if (n.visible) {
+            //     n.ext.now.indexOf(n.id) < 0
+            //     && n.ext.now.push(n.id);
+            // }
+            // else {
+            //     (n.id = n.ext.now.indexOf(n.id)) > -1
+            //     && n.ext.now.splice(parseInt(n.id), 1);
+            //
+            //     n.flash *= .5;
+            //     n.alive *= .2;
+            //     n.opacity *= .5;
+            // }
         }
 
         _force.nodes(nodes.filter(function (d) {
@@ -161,34 +141,54 @@ var ONE_SECOND = 1000,
     }
 
     function loop() {
-        console.log('loop');
-
         var dl, dr;
 
         dl = dateRange[0];
         dr = dl + stepDate;
         dateRange[0] = dr;
+        ONE_SECOND = 1000 * 10;
 
         var visTurn = _data.filter(function (d) {
             return d.date >= dl && d.date < dr;
         });
 
-        asyncForEach(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
+        console.log('loop', shortTimeFormat(dl), visTurn.length);
 
-        if (dl >= dateRange[1]) {
+        if (dl < dateRange[1]) {
+            if (visTurn.length) {
+                loopItems(visTurn, reCalc, ONE_SECOND / (visTurn.length > 1 ? visTurn.length : ONE_SECOND));
+            } else {
+                loop(); // если в stepDate нету транзакций
+            }
+        } else {
             if (typeof _worker !== "undefined") {
                 clearTimeout(_worker);
             }
+            valid = true;
             return;
-        } else {
-            if (!visTurn.length) {
-                // console.log('recursion loop');
-                loop();
-            }
         }
 
         clearTimeout(_worker);
         _worker = setTimeout(loop, ONE_SECOND);
+    }
+
+    function loopItems(items, fn, time) {
+        var _workerItem;
+        // items = items.reverse().concat();
+        function loopItem() {
+            if (items.length > 0){
+                // fn(items.shift());
+                fn(items.pop());
+                clearTimeout(_workerItem);
+            }
+            if (items.length > 0) {
+                _workerItem = setTimeout(function(){
+                    loopItem();
+                }, time || 1);
+            }
+        }
+
+        loopItem();
     }
 
     function run() {
@@ -256,13 +256,13 @@ var ONE_SECOND = 1000,
         var c,
             ext;
 
-        c = d['Major Sector'];
+        c = d['name'];
         ext = extHash.get(c);
         if (!ext) {
             ext = {
                 values: {},
-                color: d3.rgb(extColor(c)),
-                now: []
+                color: d3.rgb(extColor(c))
+                // now: []
             };
             extHash.set(c, ext);
         }
@@ -319,8 +319,6 @@ var ONE_SECOND = 1000,
         }
         return ns;
     }
-
-    var tempFileCanvas;
 
     function colorize(img, r, g, b, a) {
         if (!img)
@@ -573,8 +571,6 @@ var ONE_SECOND = 1000,
             });
         };
     }
-
-    var tooltip;
 
     function showToolTip(d) {
         var res;

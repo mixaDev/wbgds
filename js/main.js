@@ -95,12 +95,12 @@
     }
 
     function initItem(d) {
-        d.amount = parseInt(d["Total Contract Amount (USD)"].substring(1));
-        d.borrower = initItemCounty(d["Borrower Country Code"]);
-        d.supplier = initItemCounty(d["Supplier Country Code"]);
-        d.id = d['WB Contract Number'] + d.supplier.key + d.borrower.key;
-        d.date = Date.parse(d['Contract Signing Date']);
-
+        d.amount = parseInt(d["count"].substring(1));
+        d.borrower = initItemCounty(d["receiver"]);
+        d.supplier = initItemCounty(d["sender"]);
+        d.id = Date.parse(d['date']) + d.supplier.key + d.borrower.key;
+        d.date = Date.parse(d['date']);
+// console.log(d)
         return d;
     }
 
@@ -127,7 +127,7 @@
         var l, a, b;
 
         data = data
-            .filter(function(i){ return wbc.getByIsoId(i['Borrower Country Code']) && wbc.getByIsoId(i['Supplier Country Code'])})
+            .filter(function(i){ return wbc.getByIsoId(i['receiver']) && wbc.getByIsoId(i['sender'])})
             .map(initItem);
         l = data.length;
         // sizes.domain(d3.extent(data));
@@ -161,6 +161,6 @@
             .attr("class", "feature")
             .attr("d", path);
 
-        d3.csv('request/2013.csv', request);
+        d3.csv('request/orders.csv', request);
     });
 })();
