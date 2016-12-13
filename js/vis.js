@@ -34,12 +34,10 @@ var vis = {};
 
 var setting = {
     childLife: 5 // number of steps of life a child
-    // , parentLife: 0 // number of steps of life a parent
     , showHalo: true // show a child's halo
     , padding: 5 // padding around a parent
     , rateOpacity: .5 // rate of decrease of opacity
     , rateFlash: 2.5 // rate of decrease of flash
-    // , sizeParent: 0 // size of parent
 };
 
 var asyncForEach = function (items, fn, time) {
@@ -55,7 +53,9 @@ var asyncForEach = function (items, fn, time) {
             fn(workArr.shift(), workArr);
         if (workArr.length > 0) {
             clearTimeout(timeout);
-            timeout = setTimeout(loop, time || 1);
+            timeout = setTimeout(function(){
+                loop();
+            }, time || 1);
         }
     }
 
@@ -86,14 +86,10 @@ var ONE_SECOND = 1000,
         colorless = d3.rgb("gray"),
         colorlessFlash = d3.rgb("lightgray"),
 
-        parentHash,
         childHash,
         extHash,
-        // extMax,
 
         _force,
-
-        // links,
 
         canvas, ctx,
         bufCanvas, bufCtx,
@@ -107,16 +103,10 @@ var ONE_SECOND = 1000,
         _w, _h,
 
         setting,
-        rd3 = d3.random.irwinHall(8)
-        ;
+
+        body = d3.select("body");
 
     var extColor = d3.scale.category20();
-    //     baseColor = d3.scale.category20b();
-    //
-    // var typeNode = {
-    //     parent: 0,
-    //     child: 1
-    // };
 
     particle = new Image();
     particle.src = "img/particle.png";
@@ -126,26 +116,13 @@ var ONE_SECOND = 1000,
         // console.log(d)
         var l = d.nodes.length,
             n;
-        // console.log(d.parentNode)
-        // a = d.parentNode;
-        // a.relations = a.relations || {};
-        // a.fixed = a.x instanceof Object || a.y instanceof Object ? true : false;
-
-        // if (!l)
-        //     console.log(d);
-        // else {
-        //     // a.alive = setting.parentLife > 0 ? setting.parentLife : 1;
-        //     a.opacity = 100;
-        //     a.flash = 100;
-        //     a.visible = true;
-        // }
 
         while (--l > -1) {
             n = d.nodes[l];
 
             if (n.fixed) {
-                n.x = d.parent.x; //a.x;
-                n.y = d.parent.y;  //a.y;
+                n.x = d.parent.x;
+                n.y = d.parent.y;
                 n.paths = [{x: n.x, y: n.y}];
                 n.msize = n.size;
                 n.size *= 3;
@@ -155,10 +132,7 @@ var ONE_SECOND = 1000,
                 delete n["msize"];
             }
 
-            //n.size += 2;
             n.fixed = false;
-
-            // n.parent = d.parent;
 
             n.visible = true;
 
@@ -178,43 +152,6 @@ var ONE_SECOND = 1000,
                 n.alive *= .2;
                 n.opacity *= .5;
             }
-
-            // var key = a.id + "_" + n.id,
-            //     src = a,
-            //     trg = n,
-            //     bid = n.nodeValue.borrower.key,
-            //     sid = n.nodeValue.supplier.key
-            //
-            //     ;
-            //
-            // if (a.id != bid && !a.relations.hasOwnProperty(bid)) {
-            //     a.relations[bid] = n.nodeValue.borrower;
-            // } else if (a.id != sid && !a.relations.hasOwnProperty(sid)) {
-            //     a.relations[sid] = n.nodeValue.supplier;
-            // }
-            //
-            // if (n.nodeValue.borrower == a.nodeValue) {
-            //     key = n.id + "_" + a.id;
-            //     src = n;
-            //     trg = a;
-            // }
-            //
-            // if (!links.has(key))
-            //     links.set(key, {
-            //         key: key,
-            //         source: src,
-            //         target: trg
-            //     });
-            //
-            // if (n.nodeValue.supplier == n.nodeValue.borrower) {
-            //     key = n.id + "_" + a.id;
-            //     if (!links.has(key))
-            //         links.set(key, {
-            //             key: key,
-            //             source: trg,
-            //             target: src
-            //         });
-            // }
         }
 
         _force.nodes(nodes.filter(function (d) {
@@ -293,10 +230,6 @@ var ONE_SECOND = 1000,
             ? 20 : d.opacity;
     }
 
-    function randomTrue() {
-        return Math.floor(rd3() * 8) % 2;
-    }
-
     function radius(d) {
         return Math.sqrt(d);
     }
@@ -342,8 +275,6 @@ var ONE_SECOND = 1000,
             size: d.size || 2,
             weight: d.size || 2,
             fixed: true,
-            links: 0,
-            // type: type,
             color: c.toString(),
             d3color: c,
             flashColor: c.brighter().brighter(),
@@ -351,21 +282,6 @@ var ONE_SECOND = 1000,
             nodeValue: d
         }
     }
-
-    // function getBase(d) {
-    //     if (!d || !d.parent)
-    //         return null;
-    //
-    //     var pkey = d.parent.key;
-    //
-    //     var n = parentHash.get(pkey);
-    //
-    //     if (!n) {
-    //         n = node(d.parent, typeNode.parent);
-    //         parentHash.set(pkey, n);
-    //     }
-    //     return n;
-    // }
 
     function getChild(d) {
         if (!d)
@@ -377,7 +293,6 @@ var ONE_SECOND = 1000,
 
         if (!n) {
             n = node(d);
-            n.links = 1;
             childHash.set(key, n);
         }
         return n;
@@ -386,10 +301,8 @@ var ONE_SECOND = 1000,
     function initNodes(data) {
         var ns = [],
             i, j, n, d, df;
-        parentHash = d3.map({});
         childHash = d3.map({});
         extHash = d3.map({});
-        // extMax = 0;
 
         if (data) {
             i = data.length;
@@ -398,28 +311,10 @@ var ONE_SECOND = 1000,
                 if (!d) continue;
                 d.nodes = [];
 
-                // console.log('1', d);
-                // n = getBase(d);
-                // console.log('2', n);
-                // d.parentNode = n;
-                // !n.inserted && (n.inserted = ns.push(n));
-
                 n = getChild(d);
-                // console.log('3', n);
                 n.parent = d.parent;
                 d.nodes.push(n);
-                // n.ext.currents[shortTimeFormat(d.date)] = (n.ext.currents[shortTimeFormat(d.date)] || 0);
-                // n.ext.currents[shortTimeFormat(d.date)]++;
-                // n.ext.values['_' + d.id] = +d;
                 !n.inserted && (n.inserted = ns.push(n));
-
-                // j = extHash.values().reduce((function (id) {
-                //     return function (a, b) {
-                //         return (a || 0) + (b.currents[id] || 0);
-                //     }
-                // })(shortTimeFormat(d.date)), null);
-                //
-                // extMax = j > extMax ? j : extMax;
             }
         }
         return ns;
@@ -491,15 +386,7 @@ var ONE_SECOND = 1000,
 
     function checkVisible(d, offsetx, offsety) {
         var tx = lastEvent.translate[0] / lastEvent.scale,
-            ty = lastEvent.translate[1] / lastEvent.scale
-            ;
-
-        // offsetx = offsetx || 0;
-        // if (!(offsetx instanceof Array))
-        //     offsetx = [offsetx, offsetx];
-        // offsety = offsety || 0;
-        // if (!(offsety instanceof Array))
-        //     offsety = [offsety, offsety];
+            ty = lastEvent.translate[1] / lastEvent.scale;
 
         return (
             d.x + d.size > -tx
@@ -655,11 +542,6 @@ var ONE_SECOND = 1000,
 
     // Move d to be adjacent to the cluster node.
     function cluster(alpha) {
-
-        parentHash.forEach(function (k, d) {
-            d.links = 0;
-        });
-
         return function (d) {
             blink(d, setting.childLife > 0);
             if (!d.parent || !d.visible)
@@ -672,7 +554,6 @@ var ONE_SECOND = 1000,
                 y;
 
             if (node == d) return;
-            node.links++;
 
             x = d.x - node.x;
             y = d.y - node.y;
@@ -748,7 +629,7 @@ var ONE_SECOND = 1000,
             if (!d) {
                 od && (od.fixed &= 3);
                 selected = null;
-                d3.select("body").style("cursor", "default");
+                body.style("cursor", "default");
             }
         }
         else
@@ -757,7 +638,7 @@ var ONE_SECOND = 1000,
         if (d) {
             selected = d;
             d.fixed |= 4;
-            d3.select("body").style("cursor", "pointer");
+            body.style("cursor", "pointer");
         }
         showToolTip(d, d3.event);
         moveToolTip(d, d3.event);
@@ -766,8 +647,8 @@ var ONE_SECOND = 1000,
     vis.runShow = function (data, dom, w, h, asetting) {
         // console.log(data, dom, w, h, asetting);
 
-        if (typeof _worker !== "undefined")
-            clearTimeout(_worker);
+        // if (typeof _worker !== "undefined")
+        //     clearTimeout(_worker);
 
         _data = data.sort(function (a, b) {
             return d3.ascending(a, b)
@@ -831,7 +712,6 @@ var ONE_SECOND = 1000,
                         .attr("width", w)
                         .attr("height", h);
 
-        // links = d3.map({});
         nodes = initNodes(_data);
 
         _force = (_force || d3.layout.force()
