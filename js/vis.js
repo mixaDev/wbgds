@@ -33,7 +33,7 @@
 var vis = {};
 
 var setting = {
-    childLife: 1 // number of steps of life a child
+    childLife: 5 // number of steps of life a child
     , showHalo: true // show a child's halo
     , padding: 5 // padding around a parent
     , rateOpacity: .5 // rate of decrease of opacity
@@ -146,11 +146,12 @@ var ONE_SECOND = 1000,
         dl = dateRange[0];
         dr = dl + stepDate;
         dateRange[0] = dr;
-        ONE_SECOND = 1000 * 10;
 
         var visTurn = _data.filter(function (d) {
             return d.date >= dl && d.date < dr;
         });
+
+        ONE_SECOND = visTurn.length * 300; //1000 * 10;
 
         console.log('loop', shortTimeFormat(dl), visTurn.length);
 
@@ -512,7 +513,7 @@ var ONE_SECOND = 1000,
         if (valid)
             return;
 
-        console.log('render');
+        // console.log('render');
         requestAnimationFrame(render);
 
         valid = true;

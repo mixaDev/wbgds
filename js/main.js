@@ -95,12 +95,12 @@
     }
 
     function initItem(d) {
-        d.amount = parseInt(d["count"].substring(1));
+        d.amount = parseInt(d["count"]);
         d.borrower = initItemCounty(d["receiver"]);
         d.supplier = initItemCounty(d["sender"]);
-        d.id = Date.parse(d['date']) + d.supplier.key + d.borrower.key;
         d.date = Date.parse(d['date']);
-// console.log(d)
+        d.id = d.date + d.supplier.key + d.borrower.key;
+
         return d;
     }
 
